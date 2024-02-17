@@ -1,0 +1,9 @@
+{
+  "extends": "@kippu/typescript-config/api.json",
+  "include": [
+    "**/*.ts",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
