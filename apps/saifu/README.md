@@ -1,3 +1,7 @@
+# Saifu (財布, lit. wallet)
+
+This application serves as a wallet for _ticket holders_ to collect, transfer, and resell tickets and gain access to events.
+
 ## Getting Started
 
 First, run the development server:
