@@ -1,7 +1,11 @@
 {
-  "name": "my-turborepo",
+  "name": "kippu2",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "api",
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
