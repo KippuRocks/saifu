@@ -1,3 +1,7 @@
+# Ichiba (市場, lit. market)
+
+This application serves as a point for showcasing events, and selling tickets.
+
 ## Getting Started
 
 First, run the development server:
