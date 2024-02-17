@@ -9,8 +9,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
-    "@repo/eslint-config": "*",
-    "@repo/typescript-config": "*",
+    "@kippu/eslint-config": "*",
+    "@kippu/typescript-config": "*",
     "prettier": "^3.1.1",
     "turbo": "^1.12.1"
   },
