@@ -10,7 +10,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body style={{ backgroundColor: "#111421" }}>
         <AppRouterCacheProvider>
           <TickettoClientProvider>
             <ThemeProvider theme={theme}>{children}</ThemeProvider>
