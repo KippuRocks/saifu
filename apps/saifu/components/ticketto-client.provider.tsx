@@ -36,8 +36,7 @@ function TickettoProvider({ children }: { children: ReactNode }) {
         .withConsumer(TickettoWebStubConsumer)
         .withConfig({
           accountProvider: {
-            getAccountId: () =>
-              accountId ?? "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG",
+            getAccountId: () => accountId,
             sign: (payload: Uint8Array) => payload,
           },
         })

@@ -11,8 +11,8 @@ export default function EventsPage() {
   const [events, setEvents] = useState<Event[] | null | undefined>(null);
 
   const fetchEvents = useCallback(async () => {
-    let events = await client?.events?.query?.ticketHolderOf(
-      "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG"
+    const events = await client?.events.query.ticketHolderOf(
+      client?.accountProvider?.getAccountId?.()!
     );
     return events;
   }, [client]);

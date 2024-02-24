@@ -28,7 +28,7 @@ export default function EventDetailPage({
   }, [client]);
   const fetchTickets = useCallback(async () => {
     return client?.tickets?.query?.ticketHolderOf(
-      "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG",
+      client?.accountProvider?.getAccountId?.()!,
       eventId
     );
   }, [client]);
