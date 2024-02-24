@@ -3,23 +3,29 @@ import { Container, Stack } from "@mui/material";
 import { Event } from "@ticketto/types/events";
 import { EventCard } from "../../components/EventCard/EventCard";
 import { TickettoClientContext } from "../../providers/ticketto-client";
-import { Suspense, useContext, useEffect, useState } from "react";
+import { Suspense, useCallback, useContext, useEffect, useState } from "react";
 
-export default async function Events() {
+export default function Events() {
   let client = useContext(TickettoClientContext);
-  
-  async function fetchEvents() {
-    let events = await client.events?.query?.ticketHolderOf(
+  const [events, setEvents] = useState<Event[] | null | undefined>(null);
+
+  const fetchEvents = useCallback(async() => {
+    let events = await client?.events?.query?.ticketHolderOf(
       "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG"
     );
     return events;
-  }
+  }, [client]);
 
-  const events = await fetchEvents();
+  
+  useEffect(() => {
+    fetchEvents().then((events) => setEvents(events));
+  }, [fetchEvents]);
+  
 
   return (
     <Container>
       <Stack alignContent="center">
+        {!events && "PABLO ME LA COME"}
         {events?.map((event: Event) => (
           <EventCard key={event.id} event={event} />
         ))}

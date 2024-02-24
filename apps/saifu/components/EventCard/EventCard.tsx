@@ -42,7 +42,7 @@ export const EventCard = ({
       >
         <img src={banner as string} alt="" />
       </Box>
-      <Grid item direction="column">
+      <Grid item>
         <Typography variant="h5" color="initial" fontWeight="700">
           {name}
         </Typography>

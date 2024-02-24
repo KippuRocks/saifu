@@ -8,7 +8,7 @@ import { TickettoClientContext } from "../../providers/ticketto-client";
 import { Suspense, useContext, useEffect, useState } from "react";
 import Events from "../../components/Events/Events";
 
-const EventsPage = async() => {
+const EventsPage = () => {
   return (
     <Events />
   );

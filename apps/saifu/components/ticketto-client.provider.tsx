@@ -20,14 +20,16 @@ export default function TickettoClientProvider({ children }: Parent) {
   )
 }
 
-async function TickettoProvider({children}: {children: ReactNode}) {
+function TickettoProvider({children}: {children: ReactNode}) {
   if(typeof window === "undefined" || typeof Reflect?.hasOwnMetadata === "undefined") {
     return null;
   }
-  if(!Reflect.hasOwnMetadata) {
-    console.log("PUTAMADRE");
-  }
-  let client = await new TickettoClientBuilder()
+
+  const [client, setClient] = useState<TickettoClient | null>(null);
+
+  useEffect(() => {
+    async function initialize() {
+      new TickettoClientBuilder()
         .withConsumer(TickettoWebStubConsumer)
         .withConfig({
           accountProvider: {
@@ -36,7 +38,10 @@ async function TickettoProvider({children}: {children: ReactNode}) {
             sign: (payload: Uint8Array) => payload,
           },
         })
-        .build();
+        .build().then((client) => setClient(client));
+    }
+    initialize();
+  }, [])
   return (<TickettoClientContext.Provider value={client}>
     {children}
   </TickettoClientContext.Provider>)

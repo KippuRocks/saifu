@@ -15,7 +15,7 @@ const RootPage = () => {
   }, []);
 
   async function fetchEvents() {
-    let events = await client.events.query.ticketHolderOf(
+    let events = await client?.events.query.ticketHolderOf(
       "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG"
     );
     setEvents(events);
