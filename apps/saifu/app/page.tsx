@@ -1,6 +1,5 @@
 "use client";
 
-import "reflect-metadata";
 import type { Event } from "@ticketto/types";
 import { useContext, useEffect, useState } from "react";
 import { TickettoClientContext } from "../providers/ticketto-client";

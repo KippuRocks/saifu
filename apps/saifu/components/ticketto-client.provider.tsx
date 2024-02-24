@@ -4,13 +4,12 @@ import { ReactNode, Suspense, useEffect, useState } from "react";
 import { TickettoClientContext } from "../providers/ticketto-client";
 import { TickettoWebStubConsumer } from "@ticketto/web-stub";
 import { TickettoClient, TickettoClientBuilder } from "@ticketto/protocol";
-import "reflect-metadata";
 
-type Parent = {
+export default function TickettoClientProvider({
+  children,
+}: {
   children: React.ReactNode;
-};
-
-export default function TickettoClientProvider({ children }: Parent) {
+}) {
   return (
     <Suspense fallback={<Loading />}>
       <TickettoProvider>{children}</TickettoProvider>
