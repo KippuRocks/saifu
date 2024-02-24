@@ -1,10 +1,10 @@
 "use client";
 
-import { Container, Stack } from "@mui/material";
+import { Container, Link, Stack } from "@mui/material";
 import { Event } from "@ticketto/types/events";
-import { EventCard } from "../../components/Events";
-import { TickettoClientContext } from "../../providers/ticketto-client";
 import { useCallback, useContext, useEffect, useState } from "react";
+import { EventCard } from "../../components";
+import { TickettoClientContext } from "../../providers/ticketto-client";
 
 export default function EventsPage() {
   let client = useContext(TickettoClientContext);
@@ -23,9 +23,15 @@ export default function EventsPage() {
 
   return (
     <Container>
-      <Stack alignContent="center" gap="1em">
+      <Stack alignContent="center" gap={5}>
         {events?.map((event: Event) => (
-          <EventCard key={event.id} event={event} />
+          <Link
+            key={event.id}
+            sx={{ textDecoration: "none" }}
+            href={`events/${event.id}`}
+          >
+            <EventCard key={event.id} event={event} />
+          </Link>
         ))}
       </Stack>
     </Container>

@@ -1,26 +1,59 @@
 "use client";
 
 import "reflect-metadata";
-import { EventDetail } from "../../../components/Events";
+
+import { Box, Stack, Typography } from "@mui/material";
+import type { Event, Ticket } from "@ticketto/types";
 import { useCallback, useContext, useEffect, useState } from "react";
+
+import {
+  EventCard,
+  EventNotFound,
+  MarkdownRender,
+  TicketList,
+} from "../../../components";
 import { TickettoClientContext } from "../../../providers/ticketto-client";
-import type { Event } from "@ticketto/types";
 
 export default function EventDetailPage({
   params: { id },
 }: {
   params: { id: number };
 }) {
+  const eventId = Number(id);
   let client = useContext(TickettoClientContext);
   const [event, setEvent] = useState<Event | undefined>();
+  const [tickets, setTickets] = useState<Ticket[] | undefined>();
 
   const fetchEvent = useCallback(async () => {
-    return client?.events?.query?.get(Number(id));
+    return client?.events?.query?.get(eventId);
+  }, [client]);
+  const fetchTickets = useCallback(async () => {
+    return client?.tickets?.query?.ticketHolderOf(
+      "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG",
+      eventId
+    );
   }, [client]);
 
   useEffect(() => {
     fetchEvent().then((event) => setEvent(event));
-  }, [fetchEvent]);
+    fetchTickets().then((tickets) => setTickets(tickets));
+  }, [fetchEvent, fetchTickets]);
 
-  return event === undefined ? <></> : <EventDetail event={event} />;
+  return event !== undefined ? (
+    <Stack>
+      <EventCard event={event} />
+
+      <Typography marginBlock={2} variant="h5" color="white">
+        Event Details
+      </Typography>
+
+      <Box marginY={3}>
+        <MarkdownRender>{event.description}</MarkdownRender>
+      </Box>
+
+      <TicketList tickets={tickets} />
+    </Stack>
+  ) : (
+    <EventNotFound />
+  );
 }
