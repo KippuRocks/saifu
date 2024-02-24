@@ -20,7 +20,7 @@
     "@mui/x-data-grid": "^6.19.4",
     "@ticketto/protocol": "^1.1.3",
     "@ticketto/types": "^1.1.3",
-    "@ticketto/web-stub": "^1.0.2",
+    "@ticketto/web-stub": "^1.0.3",
     "next": "^14.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

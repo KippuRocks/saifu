@@ -5,7 +5,12 @@ import Image from "next/image";
 
 const convertDate = (inputDate: number) => {
   const date = new Date(inputDate);
-  return `${date.toLocaleDateString("es-CO", { weekday: "long" })} ${date.getDay()}, ${date.getFullYear()}`;
+
+  return new Intl.DateTimeFormat("es-CO", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "America/Bogota",
+  }).format(date);
 };
 
 type EventCardProps = {
