@@ -5,31 +5,12 @@ import { Container, Stack } from "@mui/material";
 import { Event } from "@ticketto/types/events";
 import { EventCard } from "../../components/EventCard/EventCard";
 import { TickettoClientContext } from "../../providers/ticketto-client";
-import { useContext, useEffect, useState } from "react";
+import { Suspense, useContext, useEffect, useState } from "react";
+import Events from "../../components/Events/Events";
 
-const EventsPage = () => {
-  let [events, setEvents] = useState<Event[]>([]);
-  let client = useContext(TickettoClientContext);
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  async function fetchEvents() {
-    let events = await client.events.query.ticketHolderOf(
-      "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG"
-    );
-    setEvents(events);
-  }
-
+const EventsPage = async() => {
   return (
-    <Container>
-      <Stack alignContent="center">
-        {events.map((event: Event) => (
-          <EventCard key={event.id} event={event} />
-        ))}
-      </Stack>
-    </Container>
+    <Events />
   );
 };
 

@@ -1,44 +1,46 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ReactNode, Suspense, useEffect, useMemo, useState } from "react";
 import { TickettoClientContext } from "../providers/ticketto-client";
 import { TickettoWebStubConsumer } from "@ticketto/web-stub";
 import { TickettoClient, TickettoClientBuilder } from "@ticketto/protocol";
+import "reflect-metadata";
 
 type Parent = {
   children: React.ReactNode;
 };
 
 export default function TickettoClientProvider({ children }: Parent) {
-  const [client, setClient] = useState<TickettoClient | null>(null);
+  return (
+    <Suspense fallback={<Loading />}>
+      <TickettoProvider>
+        {children}
+      </TickettoProvider>
+    </Suspense>
+  )
+}
 
-  useEffect(() => {
-    fetchClient();
-  }, []);
-
-  async function fetchClient() {
-    await new Promise((res) => setTimeout(res, 1_000));
-    let client = await new TickettoClientBuilder()
-      .withConsumer(TickettoWebStubConsumer)
-      .withConfig({
-        accountProvider: {
-          getAccountId: () =>
-            "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG",
-          sign: (payload: Uint8Array) => payload,
-        },
-      })
-      .build();
-
-    setClient(client);
+async function TickettoProvider({children}: {children: ReactNode}) {
+  if(typeof window === "undefined" || typeof Reflect?.hasOwnMetadata === "undefined") {
+    return null;
   }
+  if(!Reflect.hasOwnMetadata) {
+    console.log("PUTAMADRE");
+  }
+  let client = await new TickettoClientBuilder()
+        .withConsumer(TickettoWebStubConsumer)
+        .withConfig({
+          accountProvider: {
+            getAccountId: () =>
+              "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG",
+            sign: (payload: Uint8Array) => payload,
+          },
+        })
+        .build();
+  return (<TickettoClientContext.Provider value={client}>
+    {children}
+  </TickettoClientContext.Provider>)
 
-  return client == null ? (
-    <Loading />
-  ) : (
-    <TickettoClientContext.Provider value={client}>
-      {children}
-    </TickettoClientContext.Provider>
-  );
 }
 
 function Loading() {

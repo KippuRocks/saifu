@@ -5,6 +5,7 @@ import type { Event } from "@ticketto/types";
 import { useContext, useEffect, useState } from "react";
 import { TickettoClientContext } from "../providers/ticketto-client";
 
+
 const RootPage = () => {
   let [events, setEvents] = useState<Event[]>();
   let client = useContext(TickettoClientContext);
