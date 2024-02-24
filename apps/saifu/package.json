@@ -9,18 +9,21 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
-    "@kippu/ui": "*",
-    "@ticketto/types": "^1.1.1",
     "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@fontsource/roboto": "^5.0.8",
+    "@kippu/ui": "*",
     "@mui/icons-material": "^5.15.10",
     "@mui/material": "^5.15.10",
     "@mui/material-nextjs": "^5.15.9",
+    "@ticketto/protocol": "^1.1.3",
+    "@ticketto/types": "^1.1.3",
+    "@ticketto/web-stub": "^1.0.2",
     "next": "^14.0.4",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "reflect-metadata": "^0.2.1"
   },
   "devDependencies": {
     "@kippu/eslint-config": "*",
