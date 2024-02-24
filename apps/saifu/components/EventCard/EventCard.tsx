@@ -50,10 +50,20 @@ export const EventCard = ({
         <Image fill src={banner.toString()} alt={description} />
       </Box>
       <Grid item>
-        <Typography variant="h5" color="initial" fontWeight="700">
+        <Typography
+          textAlign="center"
+          variant="h5"
+          color="initial"
+          fontWeight="700"
+        >
           {name}
         </Typography>
-        <Grid container direction="row" gap={2} sx={{ alignItems: "center" }}>
+        <Grid
+          container
+          direction="row"
+          gap={2}
+          sx={{ alignItems: "center", justifyContent: "center" }}
+        >
           <CalendarMonthIcon />
           <Typography variant="body1" color="initial">
             {convertDate(date[0])}
