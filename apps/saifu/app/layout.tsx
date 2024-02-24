@@ -5,7 +5,7 @@ import theme from './theme';
  export default function RootLayout({children}: {children: React.ReactNode}) {
    return (
      <html lang="en">
-       <body>
+       <body style={{backgroundColor: "#111421"}}>
         <AppRouterCacheProvider>
            <ThemeProvider theme={theme}>
               {children}
