@@ -3,9 +3,22 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test --loader ts-node/esm test/index.ts"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@polkadot/api": "^10.11.2",
+    "@supabase/supabase-js": "^2.39.7",
+    "fastq": "^1.17.1",
+    "inversify": "^6.0.2",
+    "inversify-koa-utils": "^1.0.0",
+    "koa": "^2.15.0",
+    "koa-bearer-token": "^2.0.2",
+    "reflect-metadata": "^0.2.1"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
 }
