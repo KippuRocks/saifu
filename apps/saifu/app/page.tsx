@@ -4,7 +4,7 @@ import "reflect-metadata";
 import type { Event } from "@ticketto/types";
 import { useContext, useEffect, useState } from "react";
 import { TickettoClientContext } from "../providers/ticketto-client";
-
+import Image from "next/image";
 
 const RootPage = () => {
   let [events, setEvents] = useState<Event[]>();
@@ -27,7 +27,7 @@ const RootPage = () => {
         return (
           <div key={event.id}>
             <h1>{event.name}</h1>
-            <img alt={event.description} src={event.banner.toString()} />
+            <Image alt={event.description} src={event.banner.toString()} fill />
           </div>
         );
       })}

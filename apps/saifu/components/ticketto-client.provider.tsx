@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, Suspense, useEffect, useMemo, useState } from "react";
+import { ReactNode, Suspense, useEffect, useState } from "react";
 import { TickettoClientContext } from "../providers/ticketto-client";
 import { TickettoWebStubConsumer } from "@ticketto/web-stub";
 import { TickettoClient, TickettoClientBuilder } from "@ticketto/protocol";
@@ -13,15 +13,16 @@ type Parent = {
 export default function TickettoClientProvider({ children }: Parent) {
   return (
     <Suspense fallback={<Loading />}>
-      <TickettoProvider>
-        {children}
-      </TickettoProvider>
+      <TickettoProvider>{children}</TickettoProvider>
     </Suspense>
-  )
+  );
 }
 
-function TickettoProvider({children}: {children: ReactNode}) {
-  if(typeof window === "undefined" || typeof Reflect?.hasOwnMetadata === "undefined") {
+function TickettoProvider({ children }: { children: ReactNode }) {
+  if (
+    typeof window === "undefined" ||
+    typeof Reflect?.hasOwnMetadata === "undefined"
+  ) {
     return null;
   }
 
@@ -38,14 +39,16 @@ function TickettoProvider({children}: {children: ReactNode}) {
             sign: (payload: Uint8Array) => payload,
           },
         })
-        .build().then((client) => setClient(client));
+        .build()
+        .then((client) => setClient(client));
     }
     initialize();
-  }, [])
-  return (<TickettoClientContext.Provider value={client}>
-    {children}
-  </TickettoClientContext.Provider>)
-
+  }, []);
+  return (
+    <TickettoClientContext.Provider value={client}>
+      {children}
+    </TickettoClientContext.Provider>
+  );
 }
 
 function Loading() {

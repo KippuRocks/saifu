@@ -1,6 +1,7 @@
 import { Box, Grid, Typography } from "@mui/material";
 import { Event } from "@ticketto/types/events";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import Image from "next/image";
 
 const convertDate = (inputDate: number) => {
   const date = new Date(inputDate);
@@ -12,7 +13,7 @@ type EventCardProps = {
 };
 
 export const EventCard = ({
-  event: { name, date, banner },
+  event: { name, description, date, banner },
 }: EventCardProps) => {
   return (
     <Grid
@@ -25,11 +26,12 @@ export const EventCard = ({
         borderRadius: 5,
         alignItems: "center",
         maxWidth: "xl",
-        color: "white"
+        color: "white",
       }}
     >
       <Box
         sx={{
+          position: "relative",
           height: "300px",
           width: "90%",
           backgroundColor: "red",
@@ -40,7 +42,7 @@ export const EventCard = ({
           },
         }}
       >
-        <img src={banner as string} alt="" />
+        <Image fill src={banner.toString()} alt={description} />
       </Box>
       <Grid item>
         <Typography variant="h5" color="initial" fontWeight="700">
