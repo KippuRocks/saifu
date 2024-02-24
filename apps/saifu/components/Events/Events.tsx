@@ -22,7 +22,7 @@ export default function Events() {
 
   return (
     <Container>
-      <Stack alignContent="center">
+      <Stack alignContent="center" gap="1em">
         {!events && "PABLO ME LA COME"}
         {events?.map((event: Event) => (
           <EventCard key={event.id} event={event} />
