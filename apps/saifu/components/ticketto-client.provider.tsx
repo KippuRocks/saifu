@@ -1,9 +1,11 @@
 "use client";
 
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { ReactNode, Suspense, useEffect, useState } from "react";
 import { TickettoClientContext } from "../providers/ticketto-client";
 import { TickettoWebStubConsumer } from "@ticketto/web-stub";
 import { TickettoClient, TickettoClientBuilder } from "@ticketto/protocol";
+import { AccountId } from "@ticketto/types";
 
 export default function TickettoClientProvider({
   children,
@@ -18,6 +20,7 @@ export default function TickettoClientProvider({
 }
 
 function TickettoProvider({ children }: { children: ReactNode }) {
+  let [accountId] = useLocalStorage<AccountId>("accountId");
   if (
     typeof window === "undefined" ||
     typeof Reflect?.hasOwnMetadata === "undefined"
@@ -34,7 +37,7 @@ function TickettoProvider({ children }: { children: ReactNode }) {
         .withConfig({
           accountProvider: {
             getAccountId: () =>
-              "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG",
+              accountId ?? "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG",
             sign: (payload: Uint8Array) => payload,
           },
         })
@@ -42,7 +45,7 @@ function TickettoProvider({ children }: { children: ReactNode }) {
         .then((client) => setClient(client));
     }
     initialize();
-  }, []);
+  }, [accountId]);
   return (
     <TickettoClientContext.Provider value={client}>
       {children}
