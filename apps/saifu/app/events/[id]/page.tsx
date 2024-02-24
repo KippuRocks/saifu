@@ -2,10 +2,9 @@
 
 import "reflect-metadata";
 
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Container, Stack, Typography } from "@mui/material";
 import type { Event, Ticket } from "@ticketto/types";
 import { useCallback, useContext, useEffect, useState } from "react";
-
 import {
   EventCard,
   EventNotFound,
@@ -40,19 +39,21 @@ export default function EventDetailPage({
   }, [fetchEvent, fetchTickets]);
 
   return event !== undefined ? (
-    <Stack>
-      <EventCard event={event} />
+    <Container>
+      <Stack>
+        <EventCard event={event} />
 
-      <Typography marginBlock={2} variant="h5" color="white">
-        Event Details
-      </Typography>
+        <Typography marginBlock={2} variant="h5" color="white">
+          Event Details
+        </Typography>
 
-      <Box marginY={3}>
-        <MarkdownRender>{event.description}</MarkdownRender>
-      </Box>
+        <Box marginY={3}>
+          <MarkdownRender>{event.description}</MarkdownRender>
+        </Box>
 
-      <TicketList tickets={tickets} />
-    </Stack>
+        <TicketList tickets={tickets} />
+      </Stack>
+    </Container>
   ) : (
     <EventNotFound />
   );
