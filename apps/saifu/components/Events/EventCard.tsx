@@ -1,8 +1,8 @@
 import { Box, Grid, Typography } from "@mui/material";
-import { Event } from "@ticketto/types/events";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import Image from "next/image";
 import Link from "next/link";
+import { EventProps } from "../../types/events";
 
 const convertDate = (inputDate: number) => {
   const date = new Date(inputDate);
@@ -14,13 +14,9 @@ const convertDate = (inputDate: number) => {
   }).format(date);
 };
 
-type EventCardProps = {
-  event: Event;
-};
-
 export const EventCard = ({
   event: { id, name, description, date, banner },
-}: EventCardProps) => {
+}: EventProps) => {
   return (
     <Link href={`events/${id}`}>
       <Grid
