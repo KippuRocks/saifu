@@ -20,7 +20,13 @@ export default function EventsPage() {
   }, [client]);
 
   useEffect(() => {
-    fetchEvents().then((events) => setEvents(events));
+    fetchEvents().then((events = []) =>
+      setEvents(
+        events.sort(
+          ({ date: [startsA] }, { date: [startsB] }) => startsA - startsB
+        )
+      )
+    );
   }, [fetchEvents]);
 
   return (
