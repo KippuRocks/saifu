@@ -1,10 +1,12 @@
 "use client";
 
-import { Container, Link, Stack } from "@mui/material";
-import { Event } from "@ticketto/types/events";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { EventCard } from "../../components";
-import { TickettoClientContext } from "../../providers/ticketto-client";
+
+import { Event } from "@ticketto/types/events";
+import { TickettoClientContext } from "@kippu/ticketto-react-provider";
+
+import { Container, Link, Stack } from "@mui/material";
+import { EventCard } from "@/components";
 
 export default function EventsPage() {
   let client = useContext(TickettoClientContext);

@@ -11,7 +11,7 @@ export function TicketCard({
   ticket: Ticket;
 }) {
   return (
-    <Paper sx={{ backgroundColor: "#212031", color: "white" }}>
+    <Paper>
       <Stack
         direction="row"
         alignItems="center"
@@ -25,14 +25,10 @@ export function TicketCard({
           {description}
         </Typography>
 
-        <IconButton
-          href={`/tickets/${issuer}/${id}/qr`}
-          color="warning"
-          aria-label="access"
-        >
+        <IconButton href={`/tickets/${issuer}/${id}/qr`} aria-label="access">
           <QrCodeIcon />
         </IconButton>
-        <IconButton disabled color="warning" aria-label="send">
+        <IconButton disabled aria-label="send">
           <SendIcon />
         </IconButton>
       </Stack>

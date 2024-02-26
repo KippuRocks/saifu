@@ -5,7 +5,16 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/components": [
+        "components/index.ts"
+      ],
+      "@/components/*": [
+        "components/*"
+      ]
+    }
   },
   "include": [
     "next-env.d.ts",

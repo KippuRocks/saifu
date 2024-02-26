@@ -1,17 +1,17 @@
 "use client";
 
-import "reflect-metadata";
+import { useCallback, useContext, useEffect, useState } from "react";
+
+import type { Event, Ticket } from "@ticketto/types";
+import { TickettoClientContext } from "@kippu/ticketto-react-provider";
 
 import { Box, Container, Stack, Typography } from "@mui/material";
-import type { Event, Ticket } from "@ticketto/types";
-import { useCallback, useContext, useEffect, useState } from "react";
 import {
   EventCard,
   EventNotFound,
   MarkdownRender,
   TicketList,
-} from "../../../components";
-import { TickettoClientContext } from "../../../providers/ticketto-client";
+} from "@/components";
 
 export default function EventDetailPage({
   params: { id },
@@ -20,6 +20,7 @@ export default function EventDetailPage({
 }) {
   const eventId = Number(id);
   let client = useContext(TickettoClientContext);
+
   const [event, setEvent] = useState<Event | undefined>();
   const [tickets, setTickets] = useState<Ticket[] | undefined>();
 
@@ -43,13 +44,17 @@ export default function EventDetailPage({
       <Stack>
         <EventCard event={event} />
 
-        <Typography marginBlock={2} variant="h5" color="white">
+        <Typography marginBlock={2} variant="h5">
           Event Details
         </Typography>
 
         <Box marginY={3}>
           <MarkdownRender>{event.description}</MarkdownRender>
         </Box>
+
+        <Typography marginBlock={2} variant="h5">
+          My tickets
+        </Typography>
 
         <TicketList tickets={tickets} />
       </Stack>

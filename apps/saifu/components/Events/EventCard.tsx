@@ -1,6 +1,7 @@
+import { Event } from "@ticketto/types";
+
 import { Card, CardContent, CardMedia, Stack, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import { EventProps } from "../../types/events";
 
 const convertDate = (inputDate: number) => {
   const date = new Date(inputDate);
@@ -12,23 +13,21 @@ const convertDate = (inputDate: number) => {
   }).format(date);
 };
 
-export const EventCard = ({ event: { name, date, banner } }: EventProps) => {
+export const EventCard = ({
+  event: { name, date, banner },
+}: {
+  event: Event;
+}) => {
   return (
-    <Card
-      sx={{
-        backgroundColor: "#2B2A41",
-        maxWidth: "xl",
-        color: "white",
-      }}
-    >
+    <Card sx={{ maxWidth: "xl" }}>
       <CardMedia sx={{ height: 140 }} image={banner.toString()} title={name} />
       <CardContent>
-        <Typography gutterBottom variant="h5" color="white">
+        <Typography gutterBottom variant="h5">
           {name}
         </Typography>
         <Stack direction="row">
           <CalendarMonthIcon />
-          <Typography marginInlineStart={1} variant="body1" color="white">
+          <Typography marginInlineStart={1} variant="body1">
             {convertDate(date[0])}
           </Typography>
         </Stack>

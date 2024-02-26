@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useContext, useEffect, useState } from "react";
-import { TickettoClientContext } from "../../../../../providers/ticketto-client";
+
+import { TickettoClientContext } from "@kippu/ticketto-react-provider";
+
 import { Paper, Stack } from "@mui/material";
 import QRCode from "react-qr-code";
 
@@ -41,7 +43,7 @@ export default function EventQrCodePage({
 
   return (
     <Stack
-      sx={{ height: "100dvh", width: "100%" }}
+      sx={{ height: "100dvh", width: "100%", backgroundColor: "white" }}
       alignItems="center"
       justifyContent="center"
       boxSizing="border-box"
@@ -52,7 +54,7 @@ export default function EventQrCodePage({
             display: "flex",
             background: "transparent",
             padding: 1,
-            border: "solid 0.5rem white",
+            border: "solid 0.5rem black",
             justifyContent: "center",
             alignItems: "center",
           }}
@@ -62,7 +64,7 @@ export default function EventQrCodePage({
             size={256}
             value={attendanceRequest}
             bgColor="rgba(0,0,0,0)"
-            fgColor="#FFFFFF"
+            fgColor="#000000"
             viewBox={`0 0 256 256`}
           />
         </Paper>
