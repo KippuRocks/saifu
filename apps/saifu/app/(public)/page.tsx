@@ -1,41 +1,34 @@
 "use client";
 
-import { AccountId } from "@ticketto/types";
-import { Container, Paper, Stack, Typography } from "@mui/material";
-
-import { Account } from "@ticketto/web-stub/types";
-import { Identicon } from "@polkadot/react-identicon";
-
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AccountId, Account } from "@ticketto/types";
+
+import { TickettoClientContext } from "@kippu/ticketto-react-provider";
+import { Identicon } from "@polkadot/react-identicon";
+import { Container, Paper, Stack, Typography } from "@mui/material";
+import parsePhoneNumber from "libphonenumber-js";
+
 export default function RootPage() {
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const client = useContext(TickettoClientContext);
   const router = useRouter();
 
-  const accounts: Account[] = [
-    {
-      id: "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG",
-      identity: {
-        legalName: "Alice",
-        email: "alice@example.com",
-      },
-      balance: 0,
-    },
-    {
-      id: "5HVoCpiwRWMZCmM8ituz46JVGAzvAjqsHrGkdhqrDUD4NW6o",
-      identity: {
-        legalName: "Bob",
-        email: "bob@example.com",
-      },
-      balance: 0,
-    },
-  ];
+  const fetchAccounts = useCallback(async () => {
+    return client?.directory.query.all();
+  }, [client]);
+
+  useEffect(() => {
+    fetchAccounts().then((accounts) => setAccounts(accounts ?? []));
+  }, [fetchAccounts]);
 
   async function setAccountId(accountId: AccountId) {
     router.push(`/auth/login?accountId=${accountId}`);
   }
 
   return (
-    <Container sx={{ width: "100%", height: "100dvh" }}>
+    <Container sx={{ height: "100dvh" }}>
       <Stack
         direction="row"
         alignItems="center"
@@ -43,13 +36,18 @@ export default function RootPage() {
         spacing={2}
         sx={{ width: "100%", height: "100dvh" }}
       >
-        {accounts?.map((account) => (
-          <Paper onClick={() => setAccountId(account.id)} elevation={3}>
+        {accounts.map((account) => (
+          <Paper
+            key={account.id.toString()}
+            onClick={() => setAccountId(account.id)}
+            elevation={3}
+          >
             <Stack
               padding={2}
               direction="column"
               alignItems="center"
               justifyContent="center"
+              maxWidth="100%"
             >
               <Identicon
                 style={{
@@ -60,12 +58,21 @@ export default function RootPage() {
                 }}
                 value={account.id.toString()}
                 theme="polkadot"
+                onCopy={() => {}}
               />
               <Typography sx={{ textAlign: "cecnter" }} variant="button">
-                {account.identity.legalName}
+                {account?.identity?.display}
               </Typography>
-              <Typography sx={{ textAlign: "cecnter" }} variant="caption">
-                {account.identity.email}
+              <Typography
+                noWrap
+                sx={{ textAlign: "center" }}
+                maxWidth="100%"
+                variant="caption"
+              >
+                {parsePhoneNumber(
+                  account?.identity?.phone ?? "",
+                  "US"
+                )?.formatNational()}
               </Typography>
             </Stack>
           </Paper>
