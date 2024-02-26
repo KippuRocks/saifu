@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import { ThemeProvider } from "@mui/material/styles";
-import { ClientSide } from "@/components";
+import { ClientSideLayout } from "@/components";
 import theme from "../theme";
 import { CssBaseline } from "@mui/material";
 
@@ -20,7 +20,9 @@ export default function RootLayout({
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <ClientSide accountId={accountId}>{children}</ClientSide>
+            <ClientSideLayout accountId={accountId}>
+              {children}
+            </ClientSideLayout>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

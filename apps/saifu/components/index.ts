@@ -1,4 +1,4 @@
 export * from "./Events";
 export * from "./MarkdownRender";
-export * from "./RootLayout";
+export * from "./ClientSideLayout";
 export * from "./Tickets";

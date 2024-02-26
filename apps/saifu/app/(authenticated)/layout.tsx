@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import { ThemeProvider } from "@mui/material/styles";
-import { ClientSide } from "@/components";
+import { ClientSideLayout } from "@/components";
 import theme from "../theme";
 import {
   BottomNavigation,
@@ -28,7 +28,7 @@ export default function RootLayout({
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <ClientSide accountId={accountId}>
+            <ClientSideLayout accountId={accountId}>
               {children}
               <Paper
                 sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
@@ -47,7 +47,7 @@ export default function RootLayout({
                   />
                 </BottomNavigation>
               </Paper>
-            </ClientSide>
+            </ClientSideLayout>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

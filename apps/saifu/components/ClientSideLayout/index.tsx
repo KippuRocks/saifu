@@ -8,7 +8,7 @@ import { TickettoClientBuilder } from "@ticketto/protocol";
 import { TickettoWebStubConsumer } from "@ticketto/web-stub";
 import { type AccountId } from "@ticketto/types";
 
-export function ClientSide({
+export function ClientSideLayout({
   accountId,
   children,
 }: {
@@ -32,7 +32,7 @@ export function ClientSide({
 
           return accountId;
         },
-        sign: (payload: Uint8Array) => payload,
+        sign: (payload: Uint8Array) => Promise.resolve(payload),
       },
     });
 
