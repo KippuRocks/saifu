@@ -905,21 +905,21 @@
     tslib "^2.4.0"
 
 "@ticketto/protocol@^1.0.0", "@ticketto/protocol@^1.1.3", "@ticketto/protocol@^1.1.5":
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/@ticketto/protocol/-/protocol-1.1.5.tgz#065cf6bb45e02fc9e8a10b02e9f596181875c0a0"
-  integrity sha512-4B+EX4r92cDxGmdKXsmEiq9nA0jCJO6w+wEmZDK+/+CYFImXykuzgQzPea4b6fr2qhFEB8r9w9RvGCN1Zdtq2w==
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@ticketto/protocol/-/protocol-1.2.0.tgz#27958daaa77ba9ddda9a70f60632de6ed0d8ce3d"
+  integrity sha512-lax/vEcc4RIYiuRg4e8jrAM2ZUv7Mq9E1/YaXh5t06UoE1Y0tWo/BL5KT2uFRgVe21xngBywiDUT4TpTPLwCtg==
   dependencies:
     "@ticketto/types" "^1.0.0"
 
 "@ticketto/types@^1.0.0", "@ticketto/types@^1.1.2", "@ticketto/types@^1.1.3":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@ticketto/types/-/types-1.1.3.tgz#72b9ce4096012b757b077960295c9d3f193b51f9"
-  integrity sha512-KW5kmkG0QGyEorMKGdgP14aMStp7CkYo0UYpNY7xsZm2r5kX7GNco7iWyKA1zCE+kSFrJvyoaPbk+MSsUHZBZA==
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@ticketto/types/-/types-1.1.4.tgz#bc7cb7eaa90a6354cc9d6c391b25d06c92074388"
+  integrity sha512-Riv5qAFa3YZOTLyeNSGoazYe1xCGuBOBvbbIyNg3DXmXBYS2nB11kJH12kjC+RFa7xQKZClayiPU74aJfts9+g==
 
 "@ticketto/web-stub@^1.0.4":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@ticketto/web-stub/-/web-stub-1.0.6.tgz#8f1513b8d0fdce001b82dc03e421954c2bf0699f"
-  integrity sha512-zz1oKJ+ojhHgkYpk7Te11/5nRnbzPwrEHx5Zp9AT2zXGEAazdj8DBVLxY/RrToLIOeGDcOZBen1gmUWO3KYw6g==
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@ticketto/web-stub/-/web-stub-1.1.0.tgz#93e332b78174425c56ccf46822ed3003210bd0ed"
+  integrity sha512-af9YIUWgXzN1Xl9rb2LzGVnSzy3QGHODWWC8PRofD0S5INGTvVrxUDjrawE8nGHiR2szsCGkPbu8FsSvDE5YkA==
   dependencies:
     "@ticketto/protocol" "^1.0.0"
     "@ticketto/types" "^1.1.2"
