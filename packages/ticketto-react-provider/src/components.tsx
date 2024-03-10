@@ -1,23 +1,32 @@
 "use client";
 
+import "reflect-metadata";
 import { ReactNode, Suspense, useEffect, useState } from "react";
-import { TickettoClientContext } from "../providers/ticketto-client";
-import { TickettoWebStubConsumer } from "@ticketto/web-stub";
+import { TickettoClientContext } from "./contexts";
+
 import { TickettoClient, TickettoClientBuilder } from "@ticketto/protocol";
 
-export default function TickettoClientProvider({
+export function TickettoClientProvider({
+  builder,
   children,
 }: {
+  builder: TickettoClientBuilder;
   children: React.ReactNode;
 }) {
   return (
     <Suspense fallback={<Loading />}>
-      <TickettoProvider>{children}</TickettoProvider>
+      <TickettoProvider builder={builder}>{children}</TickettoProvider>
     </Suspense>
   );
 }
 
-function TickettoProvider({ children }: { children: ReactNode }) {
+function TickettoProvider({
+  builder,
+  children,
+}: {
+  builder: TickettoClientBuilder;
+  children: ReactNode;
+}) {
   if (
     typeof window === "undefined" ||
     typeof Reflect?.hasOwnMetadata === "undefined"
@@ -29,20 +38,10 @@ function TickettoProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function initialize() {
-      new TickettoClientBuilder()
-        .withConsumer(TickettoWebStubConsumer)
-        .withConfig({
-          accountProvider: {
-            getAccountId: () =>
-              "5DD8bv4RnTDuJt47SAjpWMT78N7gfBQNF2YiZpVUgbXkizMG",
-            sign: (payload: Uint8Array) => payload,
-          },
-        })
-        .build()
-        .then((client) => setClient(client));
+      builder.build().then((client) => setClient(client));
     }
     initialize();
-  }, []);
+  }, [builder]);
   return (
     <TickettoClientContext.Provider value={client}>
       {children}

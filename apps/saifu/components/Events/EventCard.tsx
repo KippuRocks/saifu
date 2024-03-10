@@ -1,8 +1,7 @@
-import { Box, Grid, Typography } from "@mui/material";
+import { Event } from "@ticketto/types";
+
+import { Card, CardContent, CardMedia, Stack, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import Image from "next/image";
-import Link from "next/link";
-import { EventProps } from "../../types/events";
 
 const convertDate = (inputDate: number) => {
   const date = new Date(inputDate);
@@ -15,60 +14,24 @@ const convertDate = (inputDate: number) => {
 };
 
 export const EventCard = ({
-  event: { id, name, description, date, banner },
-}: EventProps) => {
+  event: { name, date, banner },
+}: {
+  event: Event;
+}) => {
   return (
-    <Link href={`events/${id}`}>
-      <Grid
-        container
-        direction="column"
-        gap={5}
-        sx={{
-          backgroundColor: "#2B2A41",
-          padding: 5,
-          borderRadius: 5,
-          alignItems: "center",
-          maxWidth: "xl",
-          color: "white",
-        }}
-      >
-        <Box
-          sx={{
-            position: "relative",
-            height: "300px",
-            width: "90%",
-            backgroundColor: "red",
-            "& img": {
-              objectFit: "cover",
-              height: "100%",
-              width: "100%",
-            },
-          }}
-        >
-          <Image fill src={banner.toString()} alt={description} />
-        </Box>
-        <Grid item>
-          <Typography
-            textAlign="center"
-            variant="h5"
-            color="initial"
-            fontWeight="700"
-          >
-            {name}
+    <Card sx={{ maxWidth: "xl" }}>
+      <CardMedia sx={{ height: 140 }} image={banner.toString()} title={name} />
+      <CardContent>
+        <Typography gutterBottom variant="h5">
+          {name}
+        </Typography>
+        <Stack direction="row">
+          <CalendarMonthIcon />
+          <Typography marginInlineStart={1} variant="body1">
+            {convertDate(date[0])}
           </Typography>
-          <Grid
-            container
-            direction="row"
-            gap={2}
-            sx={{ alignItems: "center", justifyContent: "center" }}
-          >
-            <CalendarMonthIcon />
-            <Typography variant="body1" color="initial">
-              {convertDate(date[0])}
-            </Typography>
-          </Grid>
-        </Grid>
-      </Grid>
-    </Link>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 };

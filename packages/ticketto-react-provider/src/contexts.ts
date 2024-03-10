@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import { TickettoClient } from "@ticketto/protocol";
 import { createContext } from "react";
 
