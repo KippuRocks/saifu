@@ -3,9 +3,12 @@
   "display": "API",
   "extends": "./base.json",
   "compilerOptions": {
+    "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "NodeNext",
     "allowJs": true,
-    "noEmit": true
+    "noEmit": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   }
 }

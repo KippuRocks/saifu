@@ -3,4 +3,4 @@ import "reflect-metadata";
 import { TickettoClient } from "@ticketto/protocol";
 import { createContext } from "react";
 
-export const TickettoClientContext = createContext<TickettoClient | null>(null);
+export const TickettoClientContext = createContext<TickettoClient<Uint8Array> | null>(null);

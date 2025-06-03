@@ -1,0 +1,8 @@
+{
+  "name": "arraybuffer-base64-polyfill",
+  "version": "1.0.0-stage.3",
+  "author": "Kevin Gibbons <bakkot@gmail.com>",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts"
+}
