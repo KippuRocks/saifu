@@ -6,7 +6,7 @@ import { IconButton, Paper, Stack, Typography } from "@mui/material";
 import { Ticket } from "@ticketto/types";
 
 export function TicketCard({
-  ticket: { id, description, issuer },
+  ticket: { id, metadata, eventId },
 }: {
   ticket: Ticket;
 }) {
@@ -21,11 +21,14 @@ export function TicketCard({
       >
         <ConfirmationNumberIcon />
 
-        <Typography noWrap variant="button" flexGrow={2}>
-          {description}
-        </Typography>
+        {
+          metadata?.description
+            ? <Typography noWrap variant="button" flexGrow={2}>
+              {metadata.description}
+            </Typography> : <></>
+        }
 
-        <IconButton href={`/tickets/${issuer}/${id}/qr`} aria-label="access">
+        <IconButton href={`/tickets/${eventId}/${id}/qr`} aria-label="access">
           <QrCodeIcon />
         </IconButton>
         <IconButton disabled aria-label="send">

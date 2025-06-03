@@ -1,5 +1,6 @@
 "use client";
 
+import "arraybuffer-base64-polyfill";
 import { useCallback, useContext, useEffect, useState } from "react";
 
 import { TickettoClientContext } from "@kippu/ticketto-react-provider";
@@ -13,7 +14,7 @@ export default function EventQrCodePage({
   params: { issuer: string; id: string };
 }) {
   const eventId = Number(issuer);
-  const ticketId = Number(id);
+  const ticketId = BigInt(id);
 
   let client = useContext(TickettoClientContext);
   const [attendanceRequest, setAttendanceRequest] = useState<
@@ -26,20 +27,9 @@ export default function EventQrCodePage({
 
   useEffect(() => {
     fetchAttendanceRequest().then(async (attendanceRequest) =>
-      setAttendanceRequest(await bufferToBase64(attendanceRequest))
+      setAttendanceRequest(attendanceRequest?.toBase64())
     );
   }, [fetchAttendanceRequest]);
-
-  async function bufferToBase64(buffer?: Uint8Array) {
-    // use a FileReader to generate a base64 data URI:
-    const base64url = await new Promise<string>((r) => {
-      const reader = new FileReader();
-      reader.onload = () => r(reader.result as string);
-      reader.readAsDataURL(new Blob([buffer ?? new Uint8Array([])]));
-    });
-    // remove the `data:...;base64,` part from the start
-    return base64url?.slice(base64url?.indexOf(",") + 1);
-  }
 
   return (
     <Stack

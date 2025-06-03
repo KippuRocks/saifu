@@ -48,9 +48,12 @@ export default function EventDetailPage({
           Event Details
         </Typography>
 
-        <Box marginY={3}>
-          <MarkdownRender>{event.description}</MarkdownRender>
-        </Box>
+        {event.metadata?.description !== undefined
+          ? <Box marginY={3}>
+            <MarkdownRender>{event.metadata?.description}</MarkdownRender>
+          </Box>
+          : <></>
+        }
 
         <Typography marginBlock={2} variant="h5">
           My tickets
@@ -58,7 +61,7 @@ export default function EventDetailPage({
 
         <TicketList tickets={tickets} />
       </Stack>
-    </Container>
+    </Container >
   ) : (
     <EventNotFound />
   );

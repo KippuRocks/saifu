@@ -23,7 +23,13 @@ export default function EventsPage() {
     fetchEvents().then((events = []) =>
       setEvents(
         events.sort(
-          ({ date: [startsA] }, { date: [startsB] }) => startsA - startsB
+          ({ name: nameA, date: dateA }, { name: nameB, date: dateB }) =>
+            // While it is assumed that dates must be set when actual people
+            // hold tickets for an event, it is also safe to assume an implementation
+            // of the protocol might not include that.
+            (dateA?.[0] !== undefined && dateB?.[0] !== undefined)
+              ? Number(dateA?.[0] - dateB?.[0])
+              : nameA.localeCompare(nameB)
         )
       )
     );
