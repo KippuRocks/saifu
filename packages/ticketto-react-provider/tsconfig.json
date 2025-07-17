@@ -1,5 +1,5 @@
 {
-  "extends": "@kippu/typescript-config/nextjs.json",
+  "extends": "@kippurocks/typescript-config/nextjs.json",
   "compilerOptions": {
     "plugins": [
       {

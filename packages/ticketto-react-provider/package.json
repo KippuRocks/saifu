@@ -1,5 +1,5 @@
 {
-  "name": "@kippu/ticketto-react-provider",
+  "name": "@kippurocks/ticketto-react-provider",
   "version": "1.0.0",
   "description": "Provides Context for Ticketto Client",
   "type": "module",
@@ -15,7 +15,7 @@
     "reflect-metadata": "^0.2.1"
   },
   "devDependencies": {
-    "@kippu/eslint-config": "*",
-    "@kippu/typescript-config": "*"
+    "@kippurocks/eslint-config": "*",
+    "@kippurocks/typescript-config": "*"
   }
 }

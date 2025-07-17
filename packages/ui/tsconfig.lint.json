@@ -1,5 +1,5 @@
 {
-  "extends": "@kippu/typescript-config/react-library.json",
+  "extends": "@kippurocks/typescript-config/react-library.json",
   "compilerOptions": {
     "outDir": "dist"
   },

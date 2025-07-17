@@ -1,89 +1,32 @@
-# Kippu2
+# Saifu (財布, lit. wallet)
 
-It's Kippu, but using Web2 technologies.
+This application serves as a wallet for _ticket holders_ to collect, transfer, and resell tickets and gain access to events.
 
-> Note: This repo will be properly moved to `kippu-apps` once the migration to Web3 is complete,
-> deprecating `@kippu/ticketto-api-web2` and replacing integration to API with a polkadot client.
+## Getting Started
 
-## What's inside?
+First, run the development server:
 
-This repo includes the following packages/apps:
-
-### Apps and Packages
-
-- `api`: An implementation of [The Ticketto Protocol][kippu:ticketto] for Web2.
-- `ichiba`: This application serves as a point for showcasing events, and selling tickets.
-- `iriguchi`: This application serves as the entry point control access.
-- `saifu`: This application serves as a wallet for _ticket holders_ to collect, transfer, and resell
-  tickets and gain access to events.
-- `@kippu/ui`: a stub React component library shared by applications.
-- `@kippu/eslint-config`: `eslint` configurations (includes `eslint-config-next` and
-  `eslint-config-prettier`)
-- `@kippu/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd kippu2
-yarn build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd kippu2
+```bash
 yarn dev
 ```
 
-### Remote Caching
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Turborepo can use a technique known as [Remote Caching][turbo:remote-caching] to share cache
-artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with
-Vercel. If you don't have an account you can [create one][vercel:signup], then enter the
-following commands:
+To create [API routes](https://nextjs.org/docs/app/building-your-application/routing/router-handlers) add an `api/` directory to the `app/` directory with a `route.ts` file. For individual endpoints, create a subfolder in the `api` directory, like `api/hello/route.ts` would map to [http://localhost:3000/api/hello](http://localhost:3000/api/hello).
 
-```
-cd my-turborepo
-npx turbo login
-```
+## Learn More
 
-This will authenticate the Turborepo CLI with your [Vercel account][vercel:account].
+To learn more about Next.js, take a look at the following resources:
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the
-root of your Turborepo:
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn/foundations/about-nextjs) - an interactive Next.js tutorial.
 
-```
-npx turbo link
-```
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Useful Links
+## Deploy on Vercel
 
-Learn more about the power of Turborepo:
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_source=github.com&utm_medium=referral&utm_campaign=turborepo-readme) from the creators of Next.js.
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
-
-[kippu:ticketto]: https://github.com/KippuRocks/ticketto/blob/main/PROTOCOL.md
-[turbo:remote-caching]: https://turbo.build/repo/docs/core-concepts/remote-caching
-[vercel:signup]: https://vercel.com/signup
-[vercel:account]: https://vercel.com/docs/concepts/personal-accounts/overview
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
