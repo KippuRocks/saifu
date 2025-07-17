@@ -1,9 +1,3 @@
-import { cookies } from "next/headers";
-
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
-import { ThemeProvider } from "@mui/material/styles";
-import { ClientSideLayout } from "@/components";
-import theme from "../theme";
 import {
   BottomNavigation,
   BottomNavigationAction,
@@ -11,15 +5,20 @@ import {
   Paper,
 } from "@mui/material";
 
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
+import { ClientSideLayout } from "@/components";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LogoutIcon from "@mui/icons-material/Logout";
+import { ThemeProvider } from "@mui/material/styles";
+import { cookies } from "next/headers";
+import theme from "../theme";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const accountId = cookies().get("accountId")?.value;
+  const accountId = (await cookies())?.get("accountId")?.value;
 
   return (
     <html lang="en">
