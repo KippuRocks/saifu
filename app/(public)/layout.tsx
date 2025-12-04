@@ -1,22 +1,28 @@
 import { CssBaseline } from "@mui/material";
+import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "@mui/material/styles";
 import UnauthenticatedTickettoClient from "../_components/Layout/UnauthenticatedTickettoClient.tsx";
+import { getMessages } from "next-intl/server";
 import theme from "../theme.ts";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const messages = await getMessages();
+
   return (
     <html lang="en">
       <body>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <UnauthenticatedTickettoClient>
-            {children}
-          </UnauthenticatedTickettoClient>
-        </ThemeProvider>
+        <NextIntlClientProvider messages={messages}>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <UnauthenticatedTickettoClient>
+              {children}
+            </UnauthenticatedTickettoClient>
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

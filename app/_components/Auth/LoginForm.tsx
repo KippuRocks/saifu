@@ -4,9 +4,11 @@ import { Button, Stack, TextField, Typography } from "@mui/material";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { webAuthnService } from "../../lib/webauthn/handler.ts";
 
 export function LoginForm() {
+  const t = useTranslations("auth.login");
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -14,7 +16,7 @@ export function LoginForm() {
 
   async function handleLogin() {
     if (!username.trim()) {
-      setError("Please enter a username");
+      setError(t("usernameRequired"));
       return;
     }
 
@@ -33,10 +35,10 @@ export function LoginForm() {
         router.push("/events");
         window.location.href = "/events";
       } else {
-        setError(result.error || "Login failed");
+        setError(result.error || t("failed"));
       }
     } catch (err) {
-      setError("Login failed: " + (err as Error).message);
+      setError(t("failedWithMessage", { message: (err as Error).message }));
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +47,7 @@ export function LoginForm() {
   return (
     <>
       <TextField
-        label="Username"
+        label={t("title")}
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         fullWidth
@@ -69,7 +71,7 @@ export function LoginForm() {
         disabled={isLoading || !username.trim()}
         fullWidth
       >
-        {isLoading ? "Logging in..." : "Login"}
+        {isLoading ? t("loggingIn") : t("button")}
       </Button>
     </>
   );

@@ -5,8 +5,9 @@ import { EventCard, EventListSkeleton } from "../index.ts";
 
 import { Event } from "@ticketto/types/events";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
+import { useTranslations } from "next-intl";
 
-function EmptyEventsView() {
+function EmptyEventsView({ t }: { t: any }) {
   return (
     <Container>
       <Box
@@ -23,10 +24,10 @@ function EmptyEventsView() {
           sx={{ fontSize: 64, color: "text.secondary", mb: 2 }}
         />
         <Typography variant="h6" color="text.secondary" gutterBottom>
-          Your upcoming events
+          {t("events.upcoming")}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          You don't have any event tickets yet.
+          {t("events.noTickets")}
         </Typography>
       </Box>
     </Container>
@@ -34,6 +35,8 @@ function EmptyEventsView() {
 }
 
 export function EventList({ events }: { events: Event[] | undefined }) {
+  const t = useTranslations();
+
   const sortedEvents = events
     ? [...events].sort(
         ({ name: nameA, date: dateA }, { name: nameB, date: dateB }) =>
@@ -57,7 +60,7 @@ export function EventList({ events }: { events: Event[] | undefined }) {
 
   // Empty state when no events
   if (sortedEvents && sortedEvents.length === 0) {
-    return <EmptyEventsView />;
+    return <EmptyEventsView t={t} />;
   }
 
   return (

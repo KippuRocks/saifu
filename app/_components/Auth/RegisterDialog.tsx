@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { webAuthnService } from "../../lib/webauthn/handler.ts";
 
 interface RegisterData {
@@ -34,6 +35,7 @@ export function RegisterDialog({
   initialUsername = "",
   onSuccess,
 }: RegisterDialogProps) {
+  const t = useTranslations("auth.register");
   const [registerData, setRegisterData] = useState<RegisterData>({
     username: initialUsername,
     displayName: "",
@@ -46,7 +48,7 @@ export function RegisterDialog({
 
   async function handleRegister() {
     if (!registerData.username.trim()) {
-      setError("Username is required");
+      setError(t("usernameRequired"));
       return;
     }
 
@@ -91,10 +93,10 @@ export function RegisterDialog({
           onSuccess(registerData.username);
         }
       } else {
-        setError(result.error || "Registration failed");
+        setError(result.error || t("failed"));
       }
     } catch (err) {
-      setError("Registration failed: " + (err as Error).message);
+      setError(t("failedWithMessage", { message: (err as Error).message }));
     } finally {
       setIsLoading(false);
     }
@@ -109,11 +111,11 @@ export function RegisterDialog({
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Register New Account</DialogTitle>
+      <DialogTitle>{t("title")}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
-            label="Username"
+            label={t("title")}
             value={registerData.username}
             onChange={(e) =>
               setRegisterData({ ...registerData, username: e.target.value })
@@ -123,7 +125,7 @@ export function RegisterDialog({
             disabled={isLoading}
           />
           <TextField
-            label="Email (Optional)"
+            label={t("email")}
             type="email"
             value={registerData.email}
             onChange={(e) =>
@@ -134,7 +136,7 @@ export function RegisterDialog({
           />
           <Stack direction="row" spacing={2}>
             <TextField
-              label="First Name (Optional)"
+              label={t("firstName")}
               value={registerData.firstName}
               onChange={(e) =>
                 setRegisterData({
@@ -146,7 +148,7 @@ export function RegisterDialog({
               disabled={isLoading}
             />
             <TextField
-              label="Last Name (Optional)"
+              label={t("lastName")}
               value={registerData.lastName}
               onChange={(e) =>
                 setRegisterData({ ...registerData, lastName: e.target.value })
@@ -171,14 +173,14 @@ export function RegisterDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={isLoading}>
-          Cancel
+          {t("cancel")}
         </Button>
         <Button
           onClick={handleRegister}
           variant="contained"
           disabled={isLoading || !registerData.username.trim()}
         >
-          {isLoading ? "Registering..." : "Register"}
+          {isLoading ? t("registering") : t("button")}
         </Button>
       </DialogActions>
     </Dialog>

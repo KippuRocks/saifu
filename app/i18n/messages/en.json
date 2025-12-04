@@ -1,0 +1,41 @@
+{
+  "events": {
+    "upcoming": "Your upcoming events",
+    "noTickets": "You don't have any event tickets yet.",
+    "title": "Events",
+    "notFound": "Event Not Found"
+  },
+  "tickets": {
+    "accessQR": "Access QR Code",
+    "sendTicket": "Send Ticket"
+  },
+  "auth": {
+    "login": {
+      "title": "Username",
+      "failed": "Login failed",
+      "failedWithMessage": "Login failed: {message}",
+      "loggingIn": "Logging in...",
+      "button": "Login",
+      "usernameRequired": "Username is required",
+      "appName": "Kippu",
+      "subtitle": "Login with your username",
+      "registerPrompt": "Don't have an account? Register here"
+    },
+    "register": {
+      "title": "Register New Account",
+      "registering": "Registering...",
+      "button": "Register",
+      "usernameRequired": "Username is required",
+      "email": "Email (Optional)",
+      "firstName": "First Name (Optional)",
+      "lastName": "Last Name (Optional)",
+      "cancel": "Cancel"
+    },
+    "logout": "Logout"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  }
+}

@@ -11,6 +11,7 @@ import { createClient } from "polkadot-api";
 import { getWsProvider } from "polkadot-api/ws-provider";
 import { useRouter } from "next/navigation";
 import { useTickettoConfig } from "../../hooks/config.ts";
+import { useTranslations } from "next-intl";
 import { webAuthnService } from "../../lib/webauthn/handler.ts";
 
 export default function AuthenticatedTickettoClient({
@@ -18,6 +19,7 @@ export default function AuthenticatedTickettoClient({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   const [signer, setSigner] = useState<PapiSigner | undefined>(undefined);
   const router = useRouter();
 
@@ -59,12 +61,12 @@ export default function AuthenticatedTickettoClient({
         <BottomNavigation showLabels>
           <BottomNavigationAction
             href="/events"
-            label="Events"
+            label={t("events.title")}
             icon={<LocalActivityIcon />}
           />
           <BottomNavigationAction
             onClick={handleLogout}
-            label="Logout"
+            label={t("auth.logout")}
             icon={<LogoutIcon />}
           />
         </BottomNavigation>

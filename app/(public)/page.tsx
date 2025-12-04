@@ -4,8 +4,10 @@ import { Container, Paper, Stack, Typography } from "@mui/material";
 import { LoginForm, RegisterDialog } from "../_components/index.ts";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function RootPage() {
+  const t = useTranslations("auth.login");
   const [username, setUsername] = useState("");
   const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
 
@@ -29,11 +31,11 @@ export default function RootPage() {
       <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: "100%" }}>
         <Stack spacing={3}>
           <Typography variant="h4" component="h1" textAlign="center">
-            Kippu
+            {t("appName")}
           </Typography>
 
           <Typography variant="body1" textAlign="center" color="text.secondary">
-            Login with your username
+            {t("subtitle")}
           </Typography>
 
           <LoginForm />
@@ -45,7 +47,7 @@ export default function RootPage() {
             sx={{ cursor: "pointer" }}
             onClick={handleRegisterDialogOpen}
           >
-            Don't have an account? Register here
+            {t("registerPrompt")}
           </Typography>
         </Stack>
       </Paper>
