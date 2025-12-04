@@ -11,7 +11,7 @@
   },
   "auth": {
     "login": {
-      "title": "Email",
+      "email": "Email",
       "failed": "Login failed",
       "failedWithMessage": "Login failed: {message}",
       "loggingIn": "Logging in...",

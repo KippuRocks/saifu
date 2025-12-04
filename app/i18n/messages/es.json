@@ -11,7 +11,7 @@
   },
   "auth": {
     "login": {
-      "title": "Correo Electrónico",
+      "email": "Correo Electrónico",
       "failed": "Inicio de sesión fallido",
       "failedWithMessage": "Inicio de sesión fallido: {message}",
       "loggingIn": "Iniciando sesión...",
