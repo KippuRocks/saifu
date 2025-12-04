@@ -3,10 +3,10 @@
 import "arraybuffer-base64-polyfill";
 
 import { Paper, Stack } from "@mui/material";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import QRCode from "react-qr-code";
-import { TickettoClientContext } from "@kippurocks/ticketto-react-provider";
+import { useTickettoClient } from "../../../../../providers/TickettoClientProvider.tsx";
 
 export default function EventQrCodePage({
   params: { issuer, id },
@@ -16,7 +16,7 @@ export default function EventQrCodePage({
   const eventId = Number(issuer);
   const ticketId = BigInt(id);
 
-  let client = useContext(TickettoClientContext);
+  let client = useTickettoClient();
   const [attendanceRequest, setAttendanceRequest] = useState<
     string | undefined
   >();
