@@ -395,17 +395,17 @@ export class VirtonetworkWebAuthnService {
   }
 
   // Client-side login using Virtonetwork pattern with blockchain challenges
-  async loginWithUsername(
-    username: string
+  async loginWithEmail(
+    email: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log("🚀 Starting Virtonetwork login for:", username);
+      console.log("🚀 Starting Virtonetwork login for:", email);
 
       // Step 1: Setup WebAuthn (mock)
-      const webauthn = await this.setup(username);
+      const webauthn = await this.setup(email);
 
       // Step 2: Generate blockchain challenge using mock challenge generator
-      const blockchainChallenge = await createUserChallenge(username);
+      const blockchainChallenge = await createUserChallenge(email);
 
       console.log("📊 Using blockchain context with mock challenge generator");
 
@@ -420,7 +420,7 @@ export class VirtonetworkWebAuthnService {
         localStorage.setItem(
           "currentUser",
           JSON.stringify({
-            username,
+            email,
             loginTime: new Date().toISOString(),
             blockchainContext: {
               challenge: btoa(String.fromCharCode(...blockchainChallenge)),
@@ -444,22 +444,18 @@ export class VirtonetworkWebAuthnService {
 
   // Client-side registration using Virtonetwork pattern
   async registerUser(userData: {
-    username: string;
+    email: string;
     displayName: string;
-    email?: string;
     firstName?: string;
     lastName?: string;
   }): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log(
-        "🚀 Starting Virtonetwork registration for:",
-        userData.username
-      );
+      console.log("🚀 Starting Virtonetwork registration for:", userData.email);
 
       // Ensure user exists in storage BEFORE registration so credentials can be attached
-      if (!PersistentStorage.userExists(userData.username)) {
+      if (!PersistentStorage.userExists(userData.email)) {
         PersistentStorage.createUser({
-          username: userData.username,
+          username: userData.email, // Use email as username
           displayName: userData.displayName,
           email: userData.email,
           firstName: userData.firstName,
@@ -468,7 +464,7 @@ export class VirtonetworkWebAuthnService {
       }
 
       // Step 1: Setup WebAuthn (mock)
-      const webauthn = await this.setup(userData.username);
+      const webauthn = await this.setup(userData.email);
 
       // Step 2: Get blockchain context for registration using challenge generator
       const mockBlockNumber = Math.floor(Date.now() / 1000 / 15);
@@ -498,7 +494,7 @@ export class VirtonetworkWebAuthnService {
   }
 
   // Session management
-  getCurrentUser(): { username: string; loginTime: string } | null {
+  getCurrentUser(): { email: string; loginTime: string } | null {
     try {
       const userData = localStorage.getItem("currentUser");
       return userData ? JSON.parse(userData) : null;

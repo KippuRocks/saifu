@@ -19,12 +19,24 @@ function generateMockPublicKey(username: string): string {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { username, displayName, email, firstName, lastName } = data;
+    const { email, displayName, firstName, lastName } = data;
 
-    if (!username || !displayName) {
+    if (!email || !displayName) {
       return new Response(
         JSON.stringify({
-          error: "Username and displayName are required",
+          error: "Email and displayName are required",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid email format",
         }),
         {
           status: 400,
@@ -34,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    if (ServerStorage.userExists(username)) {
+    if (ServerStorage.userExists(email)) {
       return new Response(
         JSON.stringify({
           error: "User already exists",
@@ -46,9 +58,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create new user in persistent storage
+    // Create new user in persistent storage (use email as username)
     const newUser = ServerStorage.createUser({
-      username,
+      username: email,
       displayName,
       email,
       firstName,
@@ -57,8 +69,8 @@ export async function POST(request: NextRequest) {
 
     // Generate initial credential for the user
     const credential: StoredCredential = {
-      id: generateMockCredentialId(username),
-      publicKey: generateMockPublicKey(username),
+      id: generateMockCredentialId(email),
+      publicKey: generateMockPublicKey(email),
       createdAt: new Date().toISOString(),
       counter: 0,
       transports: ["internal"],
@@ -66,10 +78,10 @@ export async function POST(request: NextRequest) {
     };
 
     // Update user with credential and mark as blockchain registered
-    ServerStorage.updateUserCredentials(username, credential);
+    ServerStorage.updateUserCredentials(email, credential);
 
     // Return the complete user data
-    const storedUser = ServerStorage.getUser(username);
+    const storedUser = ServerStorage.getUser(email);
 
     return new Response(
       JSON.stringify({

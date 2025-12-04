@@ -10,13 +10,18 @@ import { webAuthnService } from "../../lib/webauthn/handler.ts";
 export function LoginForm() {
   const t = useTranslations("auth.login");
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   async function handleLogin() {
-    if (!username.trim()) {
-      setError(t("usernameRequired"));
+    if (!email.trim()) {
+      setError(t("emailRequired"));
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError(t("invalidEmail"));
       return;
     }
 
@@ -24,10 +29,10 @@ export function LoginForm() {
     setError("");
 
     try {
-      console.log("🚀 Starting login process for:", username);
+      console.log("🚀 Starting login process for:", email);
 
       // Use WebAuthn service for login
-      const result = await webAuthnService.loginWithUsername(username);
+      const result = await webAuthnService.loginWithEmail(email);
 
       if (result.success) {
         console.log("✅ Login successful, redirecting...");
@@ -47,9 +52,10 @@ export function LoginForm() {
   return (
     <>
       <TextField
-        label={t("title")}
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        label={t("email")}
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         fullWidth
         disabled={isLoading}
         onKeyPress={(e) => {
@@ -68,7 +74,7 @@ export function LoginForm() {
       <Button
         variant="contained"
         onClick={handleLogin}
-        disabled={isLoading || !username.trim()}
+        disabled={isLoading || !email.trim()}
         fullWidth
       >
         {isLoading ? t("loggingIn") : t("button")}

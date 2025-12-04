@@ -13,7 +13,7 @@ Saifu is a modern digital wallet application for managing event tickets with blo
 
 - **WebAuthn Integration**: Modern, passwordless authentication
 - **Biometric Support**: Fingerprint and face recognition ready
-- **Virtonetwork Compatible**: Ready for blockchain ecosystem integration
+- **Virto Signer Compatible**: Ready for blockchain ecosystem integration
 - **Multi-language Support**: English and Spanish localization
 
 ### 🎫 Ticket Management
@@ -118,8 +118,7 @@ saifu/
 ### Authentication & Security
 
 - **WebAuthn** - Modern authentication standard
-- **@virtonetwork/authenticators-webauthn** - Blockchain-compatible auth
-- **@virtonetwork/signer** - Blockchain signing integration
+- **Virto Signer** - Blockchain signing integration
 
 ### UI & Styling
 
@@ -185,7 +184,7 @@ The application supports multiple languages:
 
 - **Mock Implementation**: Fully functional with realistic data
 - **Production Ready**: Easy migration to real WebAuthn
-- **Blockchain Compatible**: Works with Virtonetwork ecosystem
+- **Blockchain Compatible**: Works with Virto Signer ecosystem
 
 ### Security Best Practices
 
@@ -310,7 +309,7 @@ Retrieve user credentials for authentication.
 
 ### Phase 3: Ecosystem Integration 🌟
 
-- [ ] Virtonetwork integration
+- [ ] Virto Signer integration
 - [ ] Cross-platform compatibility
 - [ ] Advanced security features
 - [ ] Enterprise features

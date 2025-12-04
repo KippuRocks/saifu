@@ -15,9 +15,8 @@ import { useTranslations } from "next-intl";
 import { webAuthnService } from "../../lib/webauthn/handler.ts";
 
 interface RegisterData {
-  username: string;
-  displayName: string;
   email: string;
+  displayName: string;
   firstName: string;
   lastName: string;
 }
@@ -25,21 +24,20 @@ interface RegisterData {
 interface RegisterDialogProps {
   open: boolean;
   onClose: () => void;
-  initialUsername?: string;
-  onSuccess?: (username: string) => void;
+  initialEmail?: string;
+  onSuccess?: (email: string) => void;
 }
 
 export function RegisterDialog({
   open,
   onClose,
-  initialUsername = "",
+  initialEmail = "",
   onSuccess,
 }: RegisterDialogProps) {
   const t = useTranslations("auth.register");
   const [registerData, setRegisterData] = useState<RegisterData>({
-    username: initialUsername,
+    email: initialEmail,
     displayName: "",
-    email: "",
     firstName: "",
     lastName: "",
   });
@@ -47,42 +45,50 @@ export function RegisterDialog({
   const [error, setError] = useState("");
 
   async function handleRegister() {
-    if (!registerData.username.trim()) {
-      setError(t("usernameRequired"));
+    if (!registerData.email.trim()) {
+      setError(t("emailRequired"));
       return;
     }
 
-    // Generate display name from first/last name or username
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerData.email)) {
+      setError(t("invalidEmail"));
+      return;
+    }
+
+    // Generate display name from first/last name or email
     const displayName =
       registerData.firstName || registerData.lastName
         ? `${registerData.firstName} ${registerData.lastName}`.trim()
-        : registerData.username;
+        : registerData.email.split("@")[0];
 
     const dataToRegister = {
-      ...registerData,
+      email: registerData.email,
       displayName,
+      firstName: registerData.firstName,
+      lastName: registerData.lastName,
     };
 
     setIsLoading(true);
     setError("");
 
     try {
-      console.log(
-        "🚀 Starting registration process for:",
-        registerData.username
-      );
+      console.log("🚀 Starting registration process for:", registerData.email);
 
       // Use WebAuthn service for registration
-      const result = await webAuthnService.registerUser(dataToRegister);
+      const result = await webAuthnService.registerUser({
+        email: registerData.email,
+        displayName,
+        firstName: registerData.firstName,
+        lastName: registerData.lastName,
+      });
 
       if (result.success) {
         console.log("✅ Registration successful");
         // Registration successful
         onClose();
         setRegisterData({
-          username: "",
-          displayName: "",
           email: "",
+          displayName: "",
           firstName: "",
           lastName: "",
         });
@@ -90,7 +96,7 @@ export function RegisterDialog({
 
         // Optional: call success callback
         if (onSuccess) {
-          onSuccess(registerData.username);
+          onSuccess(registerData.email);
         }
       } else {
         setError(result.error || t("failed"));
@@ -115,16 +121,6 @@ export function RegisterDialog({
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
-            label={t("title")}
-            value={registerData.username}
-            onChange={(e) =>
-              setRegisterData({ ...registerData, username: e.target.value })
-            }
-            fullWidth
-            required
-            disabled={isLoading}
-          />
-          <TextField
             label={t("email")}
             type="email"
             value={registerData.email}
@@ -132,6 +128,7 @@ export function RegisterDialog({
               setRegisterData({ ...registerData, email: e.target.value })
             }
             fullWidth
+            required
             disabled={isLoading}
           />
           <Stack direction="row" spacing={2}>
@@ -178,7 +175,7 @@ export function RegisterDialog({
         <Button
           onClick={handleRegister}
           variant="contained"
-          disabled={isLoading || !registerData.username.trim()}
+          disabled={isLoading || !registerData.email.trim()}
         >
           {isLoading ? t("registering") : t("button")}
         </Button>

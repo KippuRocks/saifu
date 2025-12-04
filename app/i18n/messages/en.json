@@ -11,22 +11,24 @@
   },
   "auth": {
     "login": {
-      "title": "Username",
+      "title": "Email",
       "failed": "Login failed",
       "failedWithMessage": "Login failed: {message}",
       "loggingIn": "Logging in...",
       "button": "Login",
-      "usernameRequired": "Username is required",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Please enter a valid email address",
       "appName": "Kippu",
-      "subtitle": "Login with your username",
+      "subtitle": "Login with your email",
       "registerPrompt": "Don't have an account? Register here"
     },
     "register": {
       "title": "Register New Account",
       "registering": "Registering...",
       "button": "Register",
-      "usernameRequired": "Username is required",
-      "email": "Email (Optional)",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Please enter a valid email address",
+      "email": "Email",
       "firstName": "First Name (Optional)",
       "lastName": "Last Name (Optional)",
       "cancel": "Cancel"

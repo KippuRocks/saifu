@@ -11,22 +11,24 @@
   },
   "auth": {
     "login": {
-      "title": "Nombre de Usuario",
+      "title": "Correo Electrónico",
       "failed": "Inicio de sesión fallido",
       "failedWithMessage": "Inicio de sesión fallido: {message}",
       "loggingIn": "Iniciando sesión...",
       "button": "Iniciar Sesión",
-      "usernameRequired": "El nombre de usuario es requerido",
+      "emailRequired": "El correo electrónico es requerido",
+      "invalidEmail": "Por favor ingresa un correo electrónico válido",
       "appName": "Kippu",
-      "subtitle": "Inicia sesión con tu nombre de usuario",
+      "subtitle": "Inicia sesión con tu correo electrónico",
       "registerPrompt": "¿No tienes cuenta? Regístrate aquí"
     },
     "register": {
       "title": "Registrar Nueva Cuenta",
       "registering": "Registrando...",
       "button": "Registrar",
-      "usernameRequired": "El nombre de usuario es requerido",
-      "email": "Correo Electrónico (Opcional)",
+      "emailRequired": "El correo electrónico es requerido",
+      "invalidEmail": "Por favor ingresa un correo electrónico válido",
+      "email": "Correo Electrónico",
       "firstName": "Nombre (Opcional)",
       "lastName": "Apellido (Opcional)",
       "cancel": "Cancelar"

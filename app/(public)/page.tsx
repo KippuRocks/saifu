@@ -8,15 +8,15 @@ import { useTranslations } from "next-intl";
 
 export default function RootPage() {
   const t = useTranslations("auth.login");
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
 
   function handleRegisterDialogOpen() {
     setIsRegisterDialogOpen(true);
   }
 
-  function handleRegistrationSuccess(registeredUsername: string) {
-    setUsername(registeredUsername);
+  function handleRegistrationSuccess(registeredEmail: string) {
+    setEmail(registeredEmail);
   }
 
   return (
@@ -55,7 +55,7 @@ export default function RootPage() {
       <RegisterDialog
         open={isRegisterDialogOpen}
         onClose={() => setIsRegisterDialogOpen(false)}
-        initialUsername={username}
+        initialEmail={email}
         onSuccess={handleRegistrationSuccess}
       />
     </Container>
