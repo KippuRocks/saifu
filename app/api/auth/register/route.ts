@@ -1,0 +1,102 @@
+import type { NextRequest } from "next/server";
+import { ServerStorage } from "../../../lib/server-db.ts";
+import { StoredCredential } from "../../../lib/webauthn/storage.ts";
+
+function generateMockCredentialId(username: string): string {
+  const timestamp = Date.now().toString();
+  const random = Math.random().toString(36).substring(2, 8);
+  return `mock_${username}_${timestamp}_${random}`;
+}
+
+function generateMockPublicKey(username: string): string {
+  const mockData = `mock_public_key_${username}_${Date.now()}`;
+  return btoa(mockData)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const data = await request.json();
+    const { username, displayName, email, firstName, lastName } = data;
+
+    if (!username || !displayName) {
+      return new Response(
+        JSON.stringify({
+          error: "Username and displayName are required",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Check if user already exists
+    if (ServerStorage.userExists(username)) {
+      return new Response(
+        JSON.stringify({
+          error: "User already exists",
+        }),
+        {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Create new user in persistent storage
+    const newUser = ServerStorage.createUser({
+      username,
+      displayName,
+      email,
+      firstName,
+      lastName,
+    });
+
+    // Generate initial credential for the user
+    const credential: StoredCredential = {
+      id: generateMockCredentialId(username),
+      publicKey: generateMockPublicKey(username),
+      createdAt: new Date().toISOString(),
+      counter: 0,
+      transports: ["internal"],
+      type: "public-key",
+    };
+
+    // Update user with credential and mark as blockchain registered
+    ServerStorage.updateUserCredentials(username, credential);
+
+    // Return the complete user data
+    const storedUser = ServerStorage.getUser(username);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "User registered successfully. WebAuthn credential created.",
+        user: storedUser,
+        credential: {
+          id: credential.id,
+          publicKey: credential.publicKey,
+          type: credential.type,
+        },
+      }),
+      {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    console.error("Registration error:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Registration failed: " + (error as Error).message,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+}
