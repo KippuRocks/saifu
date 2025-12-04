@@ -8,13 +8,14 @@ import {
   KippuPAPIConsumer,
   isKreivoTx,
 } from "@kippurocks/libticketto-papi";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 import { PapiSigner } from "../hooks/papi.signer.ts";
 import { TickettoClient } from "@ticketto/protocol";
 import { TickettoClientBuilder } from "@ticketto/protocol";
 import { TickettoConfig } from "./TickettoConfig.tsx";
 
+export const useTickettoClient = () => useContext(TickettoClientContext);
 export const TickettoClientContext = createContext<TickettoClient | null>(null);
 
 function buildAccountProvider(signer?: PapiSigner) {

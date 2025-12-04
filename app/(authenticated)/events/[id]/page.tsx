@@ -8,9 +8,9 @@ import {
   MarkdownRender,
   TicketList,
 } from "../../../_components/index.ts";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { TickettoClientContext } from "../../../providers/TickettoClientProvider.tsx";
+import { useTickettoClient } from "../../../providers/TickettoClientProvider.tsx";
 
 export default function EventDetailPage({
   params: { id },
@@ -18,7 +18,7 @@ export default function EventDetailPage({
   params: { id: number };
 }) {
   const eventId = Number(id);
-  let client = useContext(TickettoClientContext);
+  let client = useTickettoClient();
 
   const [event, setEvent] = useState<Event | undefined>();
   const [tickets, setTickets] = useState<Ticket[] | undefined>();
