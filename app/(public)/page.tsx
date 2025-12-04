@@ -1,82 +1,61 @@
 "use client";
 
-import { Account, AccountId } from "@ticketto/types";
 import { Container, Paper, Stack, Typography } from "@mui/material";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { LoginForm, RegisterDialog } from "../_components/index.ts";
 
-import { Identicon } from "@polkadot/react-identicon";
-import { TickettoClientContext } from "@kippurocks/ticketto-react-provider";
-import parsePhoneNumber from "libphonenumber-js";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function RootPage() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const client = useContext(TickettoClientContext);
-  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
 
-  const fetchAccounts = useCallback(async () => {
-    return client?.directory.query.all();
-  }, [client]);
+  function handleRegisterDialogOpen() {
+    setIsRegisterDialogOpen(true);
+  }
 
-  useEffect(() => {
-    fetchAccounts().then((accounts) => setAccounts(accounts ?? []));
-  }, [fetchAccounts]);
-
-  async function setAccountId(accountId: AccountId) {
-    router.push(`/auth/login?accountId=${accountId}`);
+  function handleRegistrationSuccess(registeredUsername: string) {
+    setUsername(registeredUsername);
   }
 
   return (
-    <Container sx={{ height: "100dvh" }}>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="center"
-        spacing={2}
-        sx={{ width: "100%", height: "100dvh" }}
-      >
-        {accounts.map((account) => (
-          <Paper
-            key={account.id.toString()}
-            onClick={() => setAccountId(account.id)}
-            elevation={3}
+    <Container
+      sx={{
+        height: "100dvh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: "100%" }}>
+        <Stack spacing={3}>
+          <Typography variant="h4" component="h1" textAlign="center">
+            Kippu
+          </Typography>
+
+          <Typography variant="body1" textAlign="center" color="text.secondary">
+            Login with your username
+          </Typography>
+
+          <LoginForm />
+
+          <Typography
+            variant="body2"
+            textAlign="center"
+            color="text.secondary"
+            sx={{ cursor: "pointer" }}
+            onClick={handleRegisterDialogOpen}
           >
-            <Stack
-              padding={2}
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              maxWidth="100%"
-            >
-              <Identicon
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  marginBlockEnd: 20,
-                }}
-                value={account.id.toString()}
-                theme="polkadot"
-                onCopy={() => {}}
-              />
-              <Typography sx={{ textAlign: "cecnter" }} variant="button">
-                {account?.identity?.display}
-              </Typography>
-              <Typography
-                noWrap
-                sx={{ textAlign: "center" }}
-                maxWidth="100%"
-                variant="caption"
-              >
-                {parsePhoneNumber(
-                  account?.identity?.phone ?? "",
-                  "US"
-                )?.formatNational()}
-              </Typography>
-            </Stack>
-          </Paper>
-        ))}
-      </Stack>
+            Don't have an account? Register here
+          </Typography>
+        </Stack>
+      </Paper>
+
+      <RegisterDialog
+        open={isRegisterDialogOpen}
+        onClose={() => setIsRegisterDialogOpen(false)}
+        initialUsername={username}
+        onSuccess={handleRegistrationSuccess}
+      />
     </Container>
   );
 }
