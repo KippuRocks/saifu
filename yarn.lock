@@ -705,9 +705,6 @@
   resolved "https://registry.yarnpkg.com/@kippurocks/papi-descriptors/-/papi-descriptors-0.1.0.tgz#e3711b27db3207e451aa61748afa9aec08c52f51"
   integrity sha512-kJiAQIddsTC8Pc1neqXIX8DoMwDHvWn9p6sYF5UsV3RDxyFXeM7rYfzzKXQEP2o8L/B0KH9uLH7twXBjFkoXpA==
 
-"@kippurocks/ui@file:./packages/ui":
-  version "0.0.0"
-
 "@levischuck/tiny-cbor@^0.2.2":
   version "0.2.11"
   resolved "https://registry.yarnpkg.com/@levischuck/tiny-cbor/-/tiny-cbor-0.2.11.tgz#833ddf7f3627dcb62d855d9c184061b4a1a875b3"

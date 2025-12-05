@@ -15,7 +15,6 @@
     "@fontsource/roboto": "^5.0.8",
     "@kippurocks/libticketto-papi": "^1.1.1",
     "@kippurocks/papi-descriptors": "^0.1.0",
-    "@kippurocks/ui": "file:./packages/ui",
     "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.2.0",
     "@mui/x-data-grid": "^8.8.0",
