@@ -6,7 +6,7 @@ import { Paper, Stack } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 
 import QRCode from "react-qr-code";
-import { useTickettoClient } from "../../../../../providers/TickettoClientProvider.tsx";
+import { useTickettoClient } from "../../../../../providers/TickettoClientProvider";
 
 export default function EventQrCodePage({
   params: { issuer, id },

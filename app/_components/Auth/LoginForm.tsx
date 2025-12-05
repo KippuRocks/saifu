@@ -5,7 +5,7 @@ import { Button, Stack, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { webAuthnService } from "../../lib/webauthn/handler.ts";
+import { webAuthnService } from "../../lib/webauthn/handler";
 
 export function LoginForm() {
   const t = useTranslations("auth.login");

@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Container, Link, Stack, Typography } from "@mui/material";
-import { EventCard, EventListSkeleton } from "../index.ts";
+import { EventCard, EventListSkeleton } from "../index";
 
 import { Event } from "@ticketto/types/events";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";

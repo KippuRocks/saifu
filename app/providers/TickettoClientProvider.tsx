@@ -10,10 +10,10 @@ import {
 } from "@kippurocks/libticketto-papi";
 import { createContext, useContext, useEffect, useState } from "react";
 
-import { PapiSigner } from "../hooks/papi.signer.ts";
+import { PapiSigner } from "../hooks/papi.signer";
 import { TickettoClient } from "@ticketto/protocol";
 import { TickettoClientBuilder } from "@ticketto/protocol";
-import { TickettoConfig } from "./TickettoConfig.tsx";
+import { TickettoConfig } from "./TickettoConfig";
 
 export const useTickettoClient = () => useContext(TickettoClientContext);
 export const TickettoClientContext = createContext<TickettoClient | null>(null);

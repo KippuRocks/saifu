@@ -1,6 +1,6 @@
 "use client";
 
-import { TickettoConfig } from "../providers/TickettoConfig.tsx";
+import { TickettoConfig } from "../providers/TickettoConfig";
 
 export function useTickettoConfig(): TickettoConfig {
   return {

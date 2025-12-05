@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 import { Event } from "@ticketto/types/events";
-import { EventList } from "../../_components/index.ts";
-import { useTickettoClient } from "../../providers/TickettoClientProvider.tsx";
+import { EventList } from "../../_components/index";
+import { useTickettoClient } from "../../providers/TickettoClientProvider";
 
 export default function EventsPage() {
   let client = useTickettoClient();

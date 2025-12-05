@@ -1,12 +1,12 @@
 "use client";
 
-import { TickettoClientProvider } from "../../providers/TickettoClientProvider.tsx";
+import { TickettoClientProvider } from "../../providers/TickettoClientProvider";
 import { createClient } from "polkadot-api";
 import { getWsProvider } from "polkadot-api/ws-provider";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useTickettoConfig } from "../../hooks/config.ts";
-import { webAuthnService } from "../../lib/webauthn/handler.ts";
+import { useTickettoConfig } from "../../hooks/config";
+import { webAuthnService } from "../../lib/webauthn/handler";
 
 export default function UnauthenticatedTickettoClient({
   children,

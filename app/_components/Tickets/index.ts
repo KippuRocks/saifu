@@ -1,3 +1,3 @@
-export { TicketList } from "./TicketList.tsx";
-export { TicketListSkeleton } from "./TicketListSkeleton.tsx";
-export { TicketCard } from "./TicketCard.tsx";
+export { TicketList } from "./TicketList";
+export { TicketListSkeleton } from "./TicketListSkeleton";
+export { TicketCard } from "./TicketCard";

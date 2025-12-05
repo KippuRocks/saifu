@@ -1,7 +1,7 @@
 "use client";
 
 import { Container, Paper, Stack, Typography } from "@mui/material";
-import { LoginForm, RegisterDialog } from "../_components/index.ts";
+import { LoginForm, RegisterDialog } from "../_components/index";
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";

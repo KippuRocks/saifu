@@ -1,18 +1,18 @@
 "use client";
 
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
-import { PapiSigner, getPapiSigner } from "../../hooks/papi.signer.ts";
+import { PapiSigner, getPapiSigner } from "../../hooks/papi.signer";
 import { useEffect, useState } from "react";
 
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { TickettoClientProvider } from "../../providers/TickettoClientProvider.tsx";
+import { TickettoClientProvider } from "../../providers/TickettoClientProvider";
 import { createClient } from "polkadot-api";
 import { getWsProvider } from "polkadot-api/ws-provider";
 import { useRouter } from "next/navigation";
-import { useTickettoConfig } from "../../hooks/config.ts";
+import { useTickettoConfig } from "../../hooks/config";
 import { useTranslations } from "next-intl";
-import { webAuthnService } from "../../lib/webauthn/handler.ts";
+import { webAuthnService } from "../../lib/webauthn/handler";
 
 export default function AuthenticatedTickettoClient({
   children,
@@ -29,8 +29,8 @@ export default function AuthenticatedTickettoClient({
       return router.push("/");
     }
 
-    console.log(`Current user is: ${user.username}`);
-    getPapiSigner(user.username).then((account) => setSigner(account));
+    console.log(`Current user is: ${user.email}`);
+    getPapiSigner(user.email).then((account) => setSigner(account));
   }, [router]);
 
   const handleLogout = () => {

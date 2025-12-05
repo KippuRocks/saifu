@@ -1,9 +1,9 @@
 "use client";
 
-import { createUserChallenge, mockChallengeGenerator } from "./challenger.ts";
+import { createUserChallenge, mockChallengeGenerator } from "./challenger";
 
 import { CredentialsHandler } from "@virtonetwork/authenticators-webauthn";
-import { PersistentStorage } from "./storage.ts";
+import { PersistentStorage } from "./storage";
 
 // Mock Virtonetwork WebAuthn handler using the actual library interface
 export class MockVirtonetworkCredentialsHandler implements CredentialsHandler {

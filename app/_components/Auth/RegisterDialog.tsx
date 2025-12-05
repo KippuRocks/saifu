@@ -12,7 +12,7 @@ import {
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { webAuthnService } from "../../lib/webauthn/handler.ts";
+import { webAuthnService } from "../../lib/webauthn/handler";
 
 interface RegisterData {
   email: string;

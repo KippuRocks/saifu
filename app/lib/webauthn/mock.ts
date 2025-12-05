@@ -1,6 +1,6 @@
 // Mock WebAuthn credential utilities for Virtonetwork ecosystem
 
-import { MockCredentialData, StoredUser, WebAuthnCredential } from "./types.ts";
+import { MockCredentialData, StoredUser, WebAuthnCredential } from "./types";
 
 // Mock user database
 export const mockUserDatabase: Record<string, StoredUser> = {

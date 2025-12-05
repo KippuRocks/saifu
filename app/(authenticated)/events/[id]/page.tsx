@@ -7,10 +7,10 @@ import {
   EventNotFound,
   MarkdownRender,
   TicketList,
-} from "../../../_components/index.ts";
+} from "../../../_components/index";
 import { useCallback, useEffect, useState } from "react";
 
-import { useTickettoClient } from "../../../providers/TickettoClientProvider.tsx";
+import { useTickettoClient } from "../../../providers/TickettoClientProvider";
 
 export default function EventDetailPage({
   params: { id },

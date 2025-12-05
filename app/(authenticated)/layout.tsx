@@ -1,9 +1,9 @@
-import AuthenticatedTickettoClient from "../_components/Layout/AuthenticatedTickettoClient.tsx";
+import AuthenticatedTickettoClient from "../_components/Layout/AuthenticatedTickettoClient";
 import { CssBaseline } from "@mui/material";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "@mui/material/styles";
 import { getMessages } from "next-intl/server";
-import theme from "../theme.ts";
+import theme from "../theme";
 
 export default async function RootLayout({
   children,

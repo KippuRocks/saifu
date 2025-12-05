@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
-import { ServerStorage } from "../../lib/server-db.ts";
-import { StoredCredential } from "../../lib/webauthn/storage.ts";
+import { ServerStorage } from "../../lib/server-db";
+import { StoredCredential } from "../../lib/webauthn/storage";
 
 // Mock blockchain challenge generation
 // In real implementation, this would come from blockchain context
