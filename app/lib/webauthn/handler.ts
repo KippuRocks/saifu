@@ -153,7 +153,6 @@ export class MockVirtonetworkCredentialsHandler implements CredentialsHandler {
     return {
       challenge: challengeBuffer,
       timeout: 60000,
-      rpId: "localhost",
       allowCredentials,
       userVerification: "preferred",
     };
