@@ -1,7 +1,7 @@
-import AuthenticatedTickettoClient from "../_components/Layout/AuthenticatedTickettoClient";
 import { CssBaseline } from "@mui/material";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "@mui/material/styles";
+import TickettoClientLayout from "../_components/Layout/TickettoClientLayout";
 import { getMessages } from "next-intl/server";
 import theme from "../theme";
 
@@ -18,9 +18,12 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <AuthenticatedTickettoClient>
+            <TickettoClientLayout
+              showNavigation={true}
+              redirectToUnauthenticated="/"
+            >
               {children}
-            </AuthenticatedTickettoClient>
+            </TickettoClientLayout>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
