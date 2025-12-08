@@ -1,7 +1,5 @@
 "use client";
 
-import "arraybuffer-base64-polyfill";
-
 import { Paper, Stack } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 
