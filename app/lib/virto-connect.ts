@@ -125,7 +125,7 @@ class VirtoCredentialsHandler implements CredentialsHandler {
 
     try {
       const response = await fetch(
-        `/api/credentials?username=${encodeURIComponent(username)}`
+        `/api/auth/credentials?username=${encodeURIComponent(username)}`
       );
 
       if (!response.ok) {

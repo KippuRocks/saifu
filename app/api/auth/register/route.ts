@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { ProfileInfo } from "@/app/lib/authentication";
-import { ServerStorage } from "@/app/lib/server-db";
-import { StoredCredential } from "@/app/lib/server-db";
+import { ServerStorage } from "@/app/api/auth/server-db";
+import { StoredCredential } from "@/app/lib/types";
 
 export type RegisterRequest = {
   username: string;
@@ -63,9 +63,7 @@ export async function POST(request: NextRequest) {
     // We use the provided credentialId and public key from attestation
     const credential: StoredCredential = {
       id: credentialId,
-      publicKey: attestation?.public_key,
       createdAt: new Date().toISOString(),
-      transports: ["internal"],
       type: "public-key",
     };
 
@@ -82,7 +80,6 @@ export async function POST(request: NextRequest) {
         user: storedUser,
         credential: {
           id: credential.id,
-          publicKey: credential.publicKey,
           type: credential.type,
         },
       }),

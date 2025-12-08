@@ -1,21 +1,7 @@
+import { StoredCredential, StoredUser } from "@/app/lib/types";
+
 import fs from "fs";
 import path from "path";
-
-export interface StoredCredential {
-  id: string;
-  publicKey: string;
-  createdAt: string;
-  transports: string[];
-  type: string;
-}
-
-export interface StoredUser {
-  username: string;
-  firstName?: string;
-  lastName?: string;
-  credentials: StoredCredential[];
-  registeredAt: string;
-}
 
 const DB_PATH = path.join(process.cwd(), "data", "users.json");
 

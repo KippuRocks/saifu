@@ -1,14 +1,10 @@
-import { ServerStorage, type StoredCredential } from "../../lib/server-db";
+import { ServerStorage } from "@/app/api/auth/server-db";
+import { type StoredCredential } from "@/app/lib/types";
 
 import type { NextRequest } from "next/server";
 
 export type CredentialsResponse = {
-  credentials: {
-    id: string;
-    publicKey: `0x${string}`;
-    type: "public-key";
-    transports: AuthenticatorTransport[];
-  }[];
+  credentials: StoredCredential[];
 };
 
 export async function GET(request: NextRequest) {
@@ -45,17 +41,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const response = {
-    credentials: user.credentials.map((cred: StoredCredential) => ({
-      id: cred.id,
-      publicKey: cred.publicKey,
-      transports: cred.transports,
-      type: cred.type,
-    })),
-  } as CredentialsResponse;
-
-  return new Response(JSON.stringify(response), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({
+      credentials: user.credentials,
+    } as CredentialsResponse),
+    {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
 }
