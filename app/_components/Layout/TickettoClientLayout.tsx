@@ -1,16 +1,17 @@
 "use client";
 
-import { PapiSigner, getPapiSigner } from "../../hooks/papi.signer";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { AuthenticationContext } from "../../hooks/useAuthentication";
 import BottomNavigation from "./BottomNavigation";
+import { ClientAccountProvider } from "@ticketto/protocol";
 import { TickettoClientProvider } from "../../providers/TickettoClientProvider";
+import { VirtoWebAuthnService } from "../../lib/virto-connect";
 import { createClient } from "polkadot-api";
 import { getWsProvider } from "polkadot-api/ws-provider";
 import { useRouter } from "next/navigation";
 import { useTickettoConfig } from "../../hooks/config";
 import { useTranslations } from "next-intl";
-import { webAuthnService } from "../../lib/webauthn/handler";
 
 interface TickettoClientLayoutProps {
   children: React.ReactNode;
@@ -26,22 +27,36 @@ export default function TickettoClientLayout({
   redirectToUnauthenticated = "/",
 }: TickettoClientLayoutProps) {
   const t = useTranslations();
-  const [signer, setSigner] = useState<PapiSigner | undefined>(undefined);
+  const [accountProvider, setAccountProvider] = useState<
+    ClientAccountProvider | undefined
+  >(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Create the Polkadot client (common for both authenticated and unauthenticated)
+  const config = useTickettoConfig();
+  const client = createClient(
+    getWsProvider(
+      process.env.NEXT_PUBLIC_CHAIN_ENDPOINT ?? "wss://kreivo.kippu.rocks"
+    )
+  );
+
+  const authService = useMemo(() => new VirtoWebAuthnService(client), [client]);
+
   // Common authentication and client setup logic
   useEffect(() => {
-    const user = webAuthnService.getCurrentUser();
+    const user = authService.getCurrentUser();
 
     // Handle routing based on authentication state
     if (user && redirectToAuthenticated) {
       // User is authenticated but we shouldn't redirect in authenticated mode
       if (showNavigation) {
         // This is authenticated mode - setup signer
-        console.log(`Current user is: ${user.email}`);
-        getPapiSigner(user.email)
-          .then((account) => setSigner(account))
+        console.log(`Current user is: ${user.login.email}`);
+        authService
+          .getAccountProvider()
+          .then((provider) => setAccountProvider(provider))
+          .catch((err) => console.error("Failed to get account provider", err))
           .finally(() => setIsLoading(false));
       } else {
         // This is unauthenticated mode - redirect to authenticated area
@@ -68,33 +83,21 @@ export default function TickettoClientLayout({
     redirectToUnauthenticated,
   ]);
 
-  // Handle logout
-  const handleLogout = () => {
-    webAuthnService.logout();
-    router.push("/");
-  };
-
   // Show loading state while determining authentication
   if (isLoading) {
     return null;
   }
 
-  // Create the Polkadot client (common for both authenticated and unauthenticated)
-  const config = useTickettoConfig();
-  const client = createClient(
-    getWsProvider(
-      process.env.NEXT_PUBLIC_CHAIN_ENDPOINT ?? "wss://kreivo.kippu.rocks"
-    )
-  );
-
   return (
-    <TickettoClientProvider
-      signer={showNavigation ? signer : undefined}
-      config={config}
-      client={client}
-    >
-      {children}
-      {showNavigation && <BottomNavigation />}
-    </TickettoClientProvider>
+    <AuthenticationContext.Provider value={authService}>
+      <TickettoClientProvider
+        accountProvider={showNavigation ? accountProvider : undefined}
+        config={config}
+        client={client}
+      >
+        {children}
+        {showNavigation && <BottomNavigation />}
+      </TickettoClientProvider>
+    </AuthenticationContext.Provider>
   );
 }

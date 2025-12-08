@@ -2,57 +2,28 @@
 
 import "reflect-metadata";
 
-import { Binary, PolkadotClient } from "polkadot-api";
-import {
-  KippuConfig,
-  KippuPAPIConsumer,
-  isKreivoTx,
-} from "@kippurocks/libticketto-papi";
+import { KippuConfig, KippuPAPIConsumer } from "@kippurocks/libticketto-papi";
 import { createContext, useContext, useEffect, useState } from "react";
 
-import { PapiSigner } from "../hooks/papi.signer";
+import { ClientAccountProvider } from "@ticketto/protocol";
+import { PolkadotClient } from "polkadot-api";
 import { TickettoClient } from "@ticketto/protocol";
 import { TickettoClientBuilder } from "@ticketto/protocol";
 import { TickettoConfig } from "./TickettoConfig";
 
 export const useTickettoClient = () => useContext(TickettoClientContext);
 export const TickettoClientContext = createContext<TickettoClient | null>(null);
-
-function buildAccountProvider(signer?: PapiSigner) {
-  return signer
-    ? {
-        getAccountId: () => {
-          return signer.address;
-        },
-        async sign<T>(payload: T) {
-          if (!isKreivoTx(payload)) {
-            throw new Error(
-              "This `AccountProvider` is not compatible with the provided payload"
-            );
-          }
-
-          const signature = await payload.sign(signer.signer);
-          return Binary.fromHex(signature).asBytes();
-        },
-      }
-    : {
-        getAccountId() {
-          throw new Error("Account not provided");
-        },
-        sign<T>(_: T) {
-          throw new Error("Account not provided");
-        },
-      };
-}
+export const useChainClient = () => useContext(ChainClientContext);
+export const ChainClientContext = createContext<PolkadotClient | null>(null);
 
 export function TickettoClientProvider({
   children,
-  signer,
+  accountProvider,
   config,
   client,
 }: {
   children: React.ReactNode;
-  signer?: PapiSigner;
+  accountProvider?: ClientAccountProvider;
   config: TickettoConfig;
   client: PolkadotClient;
 }) {
@@ -72,10 +43,17 @@ export function TickettoClientProvider({
           ticketsContractAddress: config.ticketsContractAddress,
           merchantId: config.merchantId,
         },
-        accountProvider: buildAccountProvider(signer),
+        accountProvider: accountProvider ?? {
+          getAccountId() {
+            throw new Error("Account not provided");
+          },
+          sign<T>(_: T) {
+            throw new Error("Account not provided");
+          },
+        },
       } as KippuConfig)
     );
-  }, [signer, config, client]);
+  }, [accountProvider, config, client]);
 
   const [tickettoClient, setTickettoClient] = useState<TickettoClient | null>(
     null
@@ -97,9 +75,11 @@ export function TickettoClientProvider({
 
   return (
     tickettoClient && (
-      <TickettoClientContext.Provider value={tickettoClient}>
-        {children}
-      </TickettoClientContext.Provider>
+      <ChainClientContext.Provider value={client}>
+        <TickettoClientContext.Provider value={tickettoClient}>
+          {children}
+        </TickettoClientContext.Provider>
+      </ChainClientContext.Provider>
     )
   );
 }

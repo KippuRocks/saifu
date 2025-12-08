@@ -8,16 +8,17 @@ import {
 
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LogoutIcon from "@mui/icons-material/Logout";
+import { useAuthentication } from "@/app/hooks/useAuthentication";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { webAuthnService } from "../../lib/webauthn/handler";
 
 export default function BottomNavigation() {
   const t = useTranslations();
   const router = useRouter();
+  const authnService = useAuthentication();
 
   const handleLogout = () => {
-    webAuthnService.logout();
+    authnService.logout();
     router.push("/");
   };
 

@@ -2,14 +2,15 @@
 
 import { Button, Stack, TextField, Typography } from "@mui/material";
 
+import { useAuthentication } from "../../hooks/useAuthentication";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { webAuthnService } from "../../lib/webauthn/handler";
 
 export function LoginForm() {
   const t = useTranslations("auth.login");
   const router = useRouter();
+  const authService = useAuthentication();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +33,7 @@ export function LoginForm() {
       console.log("🚀 Starting login process for:", email);
 
       // Use WebAuthn service for login
-      const result = await webAuthnService.loginWithEmail(email);
+      const result = await authService.login(email);
 
       if (result.success) {
         console.log("✅ Login successful, redirecting...");

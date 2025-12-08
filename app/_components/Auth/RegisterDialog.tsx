@@ -10,9 +10,9 @@ import {
   TextField,
 } from "@mui/material";
 
+import { useAuthentication } from "../../hooks/useAuthentication";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { webAuthnService } from "../../lib/webauthn/handler";
 
 interface RegisterData {
   email: string;
@@ -35,6 +35,7 @@ export function RegisterDialog({
   onSuccess,
 }: RegisterDialogProps) {
   const t = useTranslations("auth.register");
+  const authService = useAuthentication();
   const [registerData, setRegisterData] = useState<RegisterData>({
     email: initialEmail,
     displayName: "",
@@ -75,8 +76,7 @@ export function RegisterDialog({
       console.log("🚀 Starting registration process for:", registerData.email);
 
       // Use WebAuthn service for registration
-      const result = await webAuthnService.registerUser({
-        email: registerData.email,
+      const result = await authService.register(registerData.email, {
         displayName,
         firstName: registerData.firstName,
         lastName: registerData.lastName,
