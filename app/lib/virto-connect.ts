@@ -15,11 +15,15 @@ import {
 
 import { ClientAccountProvider } from "@ticketto/protocol";
 import { CredentialsHandler } from "@virtonetwork/authenticators-webauthn";
-import type { CredentialsResponse } from "@/app/api/credentials/route";
+import type { CredentialsResponse } from "@/app/api/auth/credentials/route";
 import { KreivoPassSigner } from "@virtonetwork/signer";
 import { WebAuthn as PasskeysAuthenticator } from "@virtonetwork/authenticators-webauthn";
 import { PolkadotClient } from "polkadot-api";
+import { StoredCredential } from "./types";
+import { credentialsDBStorage } from "./storage/credentials";
 import { mergeUint8 } from "@polkadot-api/utils";
+
+const CURRENT_USER_KEY = "saifu_current_user";
 
 export type LoginInfo = {
   email: string;
@@ -37,83 +41,30 @@ async function blockHashChallenge(
 }
 
 class VirtoCredentialsHandler implements CredentialsHandler {
-  private static readonly STORAGE_KEY = "saifu_credentials";
-  private static userCredentials: Record<string, Record<string, any>> = {};
-
-  constructor() {
-    this.loadCredentialsFromStorage();
+  private static async credentialIds(username: string) {
+    const credentials = await credentialsDBStorage.getCredentials(username);
+    return Object.entries(credentials).map(([credentialId]) => credentialId);
   }
 
-  private loadCredentialsFromStorage(): void {
-    try {
-      const stored = localStorage.getItem(VirtoCredentialsHandler.STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        for (const [userId, credentialId] of Object.entries(parsed)) {
-          if (typeof credentialId === "string") {
-            const rawId = Uint8Array.fromBase64(credentialId);
-            VirtoCredentialsHandler.userCredentials[userId] = {
-              [credentialId]: {
-                id: credentialId,
-                rawId: rawId,
-                type: "public-key",
-              },
-            };
-          }
-        }
-        console.log("Loaded credentials from localStorage");
-      }
-      console.log("userCredentials", VirtoCredentialsHandler.userCredentials);
-    } catch (error) {
-      console.error("Failed to load credentials:", error);
-    }
+  private static async setCredentials(
+    username: string,
+    credentials: StoredCredential[]
+  ) {
+    return credentialsDBStorage.setCredentials(
+      username,
+      credentials.reduce((credentials, credential) => {
+        credentials[credential.id] = credential;
+        return credentials;
+      }, {} as Record<string, StoredCredential>)
+    );
   }
 
-  private static saveCredentialsToStorage(): void {
-    try {
-      const simple: Record<string, string> = {};
-      for (const [userId, credentials] of Object.entries(
-        this.userCredentials
-      )) {
-        const credentialEntries = Object.keys(credentials);
-        if (credentialEntries.length > 0 && credentialEntries[0]) {
-          simple[userId] = credentialEntries[0]; // Take first credential
-        }
-      }
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(simple));
-    } catch (error) {
-      console.error("Failed to save credentials:", error);
-    }
-  }
-
-  private static tryMutate(
-    userId: string,
-    f: (credentials: Record<string, any>) => void
-  ): void {
-    try {
-      let map = this.userCredentials[userId] ?? {};
-      f(map);
-      this.userCredentials[userId] = map;
-    } catch {
-      /* on error, no-op */
-    }
-  }
-
-  static credentialIds(userId: string): string[] {
-    const credentials = this.userCredentials[userId] ?? {};
-    return Object.entries(credentials).map(([, credential]) => credential.id);
-  }
-
-  publicKeyCreateOptions = async (
-    challenge: Uint8Array,
+  async publicKeyCreateOptions(
+    challenge: Uint8Array<ArrayBuffer>,
     user: PublicKeyCredentialUserEntity
-  ): Promise<CredentialCreationOptions["publicKey"]> => {
-    // Ensure we have a proper ArrayBuffer for BufferSource
-    const challengeArray = new Uint8Array(challenge);
-    const challengeBuffer = challengeArray.buffer.slice();
-
+  ): Promise<CredentialCreationOptions["publicKey"]> {
     return {
-      challenge: challengeBuffer,
+      challenge,
       rp: {
         name: "Kippu",
       },
@@ -134,49 +85,47 @@ class VirtoCredentialsHandler implements CredentialsHandler {
       timeout: 60000,
       attestation: "none",
     };
-  };
-
-  onCreatedCredentials = async (
-    userId: string,
-    credential: PublicKeyCredential
-  ): Promise<void> => {
-    VirtoCredentialsHandler.tryMutate(userId, (credentials) => {
-      credentials[credential.id] = credential;
-    });
-
-    VirtoCredentialsHandler.saveCredentialsToStorage();
-  };
-
-  private getLocalAllowCredentials(
-    userId: string
-  ): PublicKeyCredentialDescriptor[] {
-    const credentialIds = VirtoCredentialsHandler.credentialIds(userId);
-
-    return credentialIds.map((credentialId) => ({
-      id: Uint8Array.fromBase64(credentialId),
-      type: "public-key",
-      transports: ["internal", "hybrid", "usb", "nfc", "ble"],
-    }));
   }
 
-  publicKeyRequestOptions = async (
-    userId: string,
-    challenge: Uint8Array<ArrayBuffer>
-  ): Promise<CredentialRequestOptions["publicKey"]> => {
-    const localCredentials = this.getLocalAllowCredentials(userId);
+  async onCreatedCredentials(
+    username: string,
+    credential: PublicKeyCredential
+  ): Promise<void> {
+    await credentialsDBStorage.saveCredential(username, {
+      id: credential.id,
+      createdAt: new Date().toISOString(),
+      type: "public-key",
+    });
+  }
 
-    if (localCredentials) {
+  async publicKeyRequestOptions(
+    username: string,
+    challenge: Uint8Array<ArrayBuffer>
+  ): Promise<CredentialRequestOptions["publicKey"]> {
+    const credentialIds = await VirtoCredentialsHandler.credentialIds(username);
+
+    if (credentialIds.length) {
       return {
         challenge,
         timeout: 60000,
         userVerification: "preferred",
-        allowCredentials: localCredentials,
+        allowCredentials: credentialIds.map((id) => {
+          const credentialId: Uint8Array<ArrayBuffer> = Uint8Array.fromBase64(
+            id,
+            { alphabet: "base64url" }
+          );
+
+          return {
+            id: credentialId,
+            type: "public-key",
+          };
+        }),
       };
     }
 
     try {
       const response = await fetch(
-        `/api/credentials?username=${encodeURIComponent(userId)}`
+        `/api/credentials?username=${encodeURIComponent(username)}`
       );
 
       if (!response.ok) {
@@ -190,22 +139,10 @@ class VirtoCredentialsHandler implements CredentialsHandler {
       const allowCredentials = (data.credentials ?? []).map((cred) => ({
         id: Uint8Array.fromBase64(cred.id),
         type: cred.type || "public-key",
-        transports: cred.transports || ["internal"],
       }));
 
       // Finally, let's store the found credentials.
-      VirtoCredentialsHandler.tryMutate(userId, (credentials) => {
-        allowCredentials.forEach((cred) => {
-          const credentialId = cred.id.toBase64();
-
-          credentials[credentialId] = {
-            id: credentialId,
-            rawId: cred.id,
-            type: cred.type,
-          };
-        });
-      });
-      VirtoCredentialsHandler.saveCredentialsToStorage();
+      await VirtoCredentialsHandler.setCredentials(username, data.credentials);
 
       return {
         challenge,
@@ -214,11 +151,11 @@ class VirtoCredentialsHandler implements CredentialsHandler {
         allowCredentials,
       };
     } catch (error) {
-      throw new Error(`Failed to fetch credentialIds for ${userId}`, {
+      throw new Error(`Failed to fetch credentialIds for ${username}`, {
         cause: error,
       });
     }
-  };
+  }
 }
 
 export class VirtoWebAuthnService implements AuthenticationService<LoginInfo> {
@@ -228,7 +165,7 @@ export class VirtoWebAuthnService implements AuthenticationService<LoginInfo> {
   constructor(private client: PolkadotClient) {
     // Initialize from storage if available
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("saifu_current_user");
+      const stored = localStorage.getItem(CURRENT_USER_KEY);
       if (stored) {
         this.currentLogin = JSON.parse(stored);
       }
@@ -248,7 +185,9 @@ export class VirtoWebAuthnService implements AuthenticationService<LoginInfo> {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          credentialId: attestation.meta.device_id.asBytes().toBase64(),
+          credentialId: attestation.meta.device_id
+            .asBytes()
+            .toBase64({ alphabet: "base64url" }),
           attestation: {
             authenticator_data: attestation.authenticator_data.asHex(),
             client_data: attestation.client_data.asText(),
@@ -283,7 +222,7 @@ export class VirtoWebAuthnService implements AuthenticationService<LoginInfo> {
         blockNumber: block.number,
       };
 
-      localStorage.setItem("currentUser", JSON.stringify(this.currentLogin));
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(this.currentLogin));
 
       return { success: true };
     } catch (error) {
@@ -336,7 +275,7 @@ export class VirtoWebAuthnService implements AuthenticationService<LoginInfo> {
   logout() {
     this.currentLogin = undefined;
     this.signer = undefined;
-    localStorage.removeItem("currentUser");
+    localStorage.removeItem(CURRENT_USER_KEY);
   }
 
   private async getAuthenticator(
