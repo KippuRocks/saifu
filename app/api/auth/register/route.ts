@@ -1,30 +1,24 @@
 import type { NextRequest } from "next/server";
-import { ServerStorage } from "../../../lib/server-db";
-import { StoredCredential } from "../../../lib/webauthn/storage";
+import { ProfileInfo } from "@/app/lib/authentication";
+import { ServerStorage } from "@/app/lib/server-db";
+import { StoredCredential } from "@/app/lib/server-db";
 
-function generateMockCredentialId(username: string): string {
-  const timestamp = Date.now().toString();
-  const random = Math.random().toString(36).substring(2, 8);
-  return `mock_${username}_${timestamp}_${random}`;
-}
-
-function generateMockPublicKey(username: string): string {
-  const mockData = `mock_public_key_${username}_${Date.now()}`;
-  return btoa(mockData)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=/g, "");
-}
+export type RegisterRequest = {
+  username: string;
+  profile: ProfileInfo;
+  attestation: AttestationData;
+  credentialId: string;
+};
 
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
-    const { email, displayName, firstName, lastName } = data;
+    const data: RegisterRequest = await request.json();
+    const { username, profile, attestation, credentialId } = data;
 
-    if (!email || !displayName) {
+    if (!username) {
       return new Response(
         JSON.stringify({
-          error: "Email and displayName are required",
+          error: "Username (email) is required",
         }),
         {
           status: 400,
@@ -33,7 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username)) {
       return new Response(
         JSON.stringify({
           error: "Invalid email format",
@@ -46,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    if (ServerStorage.userExists(email)) {
+    if (ServerStorage.userExists(username)) {
       return new Response(
         JSON.stringify({
           error: "User already exists",
@@ -59,29 +53,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new user in persistent storage (use email as username)
-    const newUser = ServerStorage.createUser({
-      username: email,
-      displayName,
-      email,
-      firstName,
-      lastName,
+    ServerStorage.createUser({
+      username,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
     });
 
-    // Generate initial credential for the user
+    // Store the credential
+    // We use the provided credentialId and public key from attestation
     const credential: StoredCredential = {
-      id: generateMockCredentialId(email),
-      publicKey: generateMockPublicKey(email),
+      id: credentialId,
+      publicKey: attestation?.public_key,
       createdAt: new Date().toISOString(),
-      counter: 0,
       transports: ["internal"],
       type: "public-key",
     };
 
     // Update user with credential and mark as blockchain registered
-    ServerStorage.updateUserCredentials(email, credential);
+    ServerStorage.updateUserCredentials(username, credential);
 
     // Return the complete user data
-    const storedUser = ServerStorage.getUser(email);
+    const storedUser = ServerStorage.getUser(username);
 
     return new Response(
       JSON.stringify({
@@ -111,4 +103,14 @@ export async function POST(request: NextRequest) {
       }
     );
   }
+}
+export interface AttestationData {
+  authenticator_data: string;
+  client_data: string;
+  public_key: string;
+  meta: {
+    deviceId: string;
+    context: number;
+    authority_id: string;
+  };
 }

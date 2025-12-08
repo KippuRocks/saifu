@@ -1,7 +1,21 @@
-import { StoredCredential, StoredUser } from "./webauthn/storage";
-
 import fs from "fs";
 import path from "path";
+
+export interface StoredCredential {
+  id: string;
+  publicKey: string;
+  createdAt: string;
+  transports: string[];
+  type: string;
+}
+
+export interface StoredUser {
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  credentials: StoredCredential[];
+  registeredAt: string;
+}
 
 const DB_PATH = path.join(process.cwd(), "data", "users.json");
 
@@ -46,16 +60,14 @@ export class ServerStorage {
   }
 
   static createUser(
-    userData: Omit<
-      StoredUser,
-      "credentials" | "registeredAt" | "blockchainRegistered"
-    > & { credentials?: StoredCredential[] }
+    userData: Omit<StoredUser, "credentials" | "registeredAt"> & {
+      credentials?: StoredCredential[];
+    }
   ): StoredUser {
     const newUser: StoredUser = {
       ...userData,
       credentials: userData.credentials || [],
       registeredAt: new Date().toISOString(),
-      blockchainRegistered: false,
     };
     this.saveUser(newUser);
     return newUser;
@@ -76,11 +88,6 @@ export class ServerStorage {
       user.credentials[existingIndex] = credential;
     } else {
       user.credentials.push(credential);
-    }
-
-    // Mark as blockchain registered when first credential is added
-    if (user.credentials.length === 1) {
-      user.blockchainRegistered = true;
     }
 
     this.saveUser(user);
