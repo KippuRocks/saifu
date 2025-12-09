@@ -35,6 +35,20 @@
     },
     "logout": "Cerrar Sesión"
   },
+  "profile": {
+    "personalInfo": "Información Personal",
+    "title": "Perfil",
+    "email": "Correo Electrónico",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "edit": "Editar",
+    "registeredAt": "Registrado en",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "blockchainInfo": "Información de la Cuenta",
+    "address": "ID de la Cuenta",
+    "copied": "¡Copiado al portapapeles!"
+  },
   "common": {
     "loading": "Cargando...",
     "error": "Error",

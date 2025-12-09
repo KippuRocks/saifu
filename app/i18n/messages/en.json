@@ -35,6 +35,20 @@
     },
     "logout": "Logout"
   },
+  "profile": {
+    "personalInfo": "Personal Info",
+    "title": "Profile",
+    "email": "Email",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "registeredAt": "Registered At",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "blockchainInfo": "Account Information",
+    "address": "Address",
+    "copied": "Copied to clipboard!"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

@@ -56,6 +56,16 @@ export function RegisterDialog({
       return;
     }
 
+    if (!registerData.firstName.trim()) {
+      setError(t("firstNameRequired"));
+      return;
+    }
+
+    if (!registerData.lastName.trim()) {
+      setError(t("lastNameRequired"));
+      return;
+    }
+
     // Generate display name from first/last name or email
     const displayName =
       registerData.firstName || registerData.lastName
@@ -84,20 +94,10 @@ export function RegisterDialog({
 
       if (result.success) {
         console.log("✅ Registration successful");
-        // Registration successful
-        onClose();
-        setRegisterData({
-          email: "",
-          displayName: "",
-          firstName: "",
-          lastName: "",
-        });
-        setError("");
-
-        // Optional: call success callback
-        if (onSuccess) {
-          onSuccess(registerData.email);
-        }
+        // Auto-login after successful registration
+        await authService.login(registerData.email);
+        // Redirect to /events
+        window.location.href = "/events";
       } else {
         setError(result.error || t("failed"));
       }
@@ -115,8 +115,26 @@ export function RegisterDialog({
     }
   }
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (
+      e.key === "Enter" &&
+      !isLoading &&
+      registerData.email.trim() &&
+      registerData.firstName.trim() &&
+      registerData.lastName.trim()
+    ) {
+      handleRegister();
+    }
+  };
+
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      onKeyPress={handleKeyPress}
+    >
       <DialogTitle>{t("title")}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
@@ -175,7 +193,12 @@ export function RegisterDialog({
         <Button
           onClick={handleRegister}
           variant="contained"
-          disabled={isLoading || !registerData.email.trim()}
+          disabled={
+            isLoading ||
+            !registerData.email.trim() ||
+            !registerData.firstName.trim() ||
+            !registerData.lastName.trim()
+          }
         >
           {isLoading ? t("registering") : t("button")}
         </Button>

@@ -8,6 +8,7 @@ import {
 
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
 import { useAuthentication } from "@/app/hooks/useAuthentication";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -32,6 +33,11 @@ export default function BottomNavigation() {
           href="/events"
           label={t("events.title")}
           icon={<LocalActivityIcon />}
+        />
+        <BottomNavigationAction
+          href="/profile"
+          label={t("profile.title")}
+          icon={<PersonIcon />}
         />
         <BottomNavigationAction
           onClick={handleLogout}
