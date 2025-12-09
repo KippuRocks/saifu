@@ -59,6 +59,12 @@ class VirtoCredentialsHandler implements CredentialsHandler {
     );
   }
 
+  #lastCreatedCredentials?: PublicKeyCredential;
+
+  get lastCreatedCredentials() {
+    return this.#lastCreatedCredentials;
+  }
+
   async publicKeyCreateOptions(
     challenge: Uint8Array<ArrayBuffer>,
     user: PublicKeyCredentialUserEntity
@@ -70,8 +76,8 @@ class VirtoCredentialsHandler implements CredentialsHandler {
       },
       user: {
         id: user.id,
-        name: user.name,
-        displayName: user.displayName || user.name,
+        name: user.displayName,
+        displayName: user.displayName,
       },
       pubKeyCredParams: [
         {
@@ -91,6 +97,7 @@ class VirtoCredentialsHandler implements CredentialsHandler {
     username: string,
     credential: PublicKeyCredential
   ): Promise<void> {
+    this.#lastCreatedCredentials = credential;
     await credentialsDBStorage.saveCredential(username, {
       id: credential.id,
       createdAt: new Date().toISOString(),
@@ -137,7 +144,7 @@ class VirtoCredentialsHandler implements CredentialsHandler {
       const data: CredentialsResponse = await response.json();
 
       const allowCredentials = (data.credentials ?? []).map((cred) => ({
-        id: Uint8Array.fromBase64(cred.id),
+        id: Uint8Array.fromBase64(cred.id, { alphabet: "base64url" }),
         type: cred.type || "public-key",
       }));
 
@@ -174,20 +181,31 @@ export class VirtoWebAuthnService implements AuthenticationService<LoginInfo> {
 
   async register(email: string, profile: ProfileInfo): Promise<Result> {
     try {
-      const authenticator = await this.getAuthenticator(email);
+      const handler = new VirtoCredentialsHandler();
+      const authenticator = await this.getAuthenticator(email, handler);
+
+      profile.displayName =
+        profile.displayName ||
+        `${profile.firstName} ${profile.lastName}`.trim();
 
       const block = await this.client.getFinalizedBlock();
-      const attestation = await authenticator.register(block.number);
+      const attestation = await authenticator.register(
+        block.number,
+        profile.displayName
+      );
 
-      await fetch("/api/auth/register", {
+      if (!handler.lastCreatedCredentials) {
+        throw new Error("No credentials were created");
+      }
+
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          credentialId: attestation.meta.device_id
-            .asBytes()
-            .toBase64({ alphabet: "base64url" }),
+          username: `ticketto::kippu:${email}`,
+          credentialId: handler.lastCreatedCredentials?.id,
           attestation: {
             authenticator_data: attestation.authenticator_data.asHex(),
             client_data: attestation.client_data.asText(),
@@ -201,6 +219,12 @@ export class VirtoWebAuthnService implements AuthenticationService<LoginInfo> {
           profile,
         } as RegisterRequest),
       });
+
+      if (!response.ok) {
+        throw new Error("Registration failed", {
+          cause: response.body,
+        });
+      }
 
       return { success: true };
     } catch (error) {
