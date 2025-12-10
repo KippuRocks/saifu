@@ -1,7 +1,8 @@
+import AppBar from "../_components/Layout/AppBar";
 import { CssBaseline } from "@mui/material";
 import { NextIntlClientProvider } from "next-intl";
+import SaifuLayout from "../_components/Layout/SaifuLayout";
 import { ThemeProvider } from "@mui/material/styles";
-import TickettoClientLayout from "../_components/Layout/TickettoClientLayout";
 import { getMessages } from "next-intl/server";
 import theme from "../theme";
 
@@ -18,12 +19,10 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <TickettoClientLayout
-              showNavigation={true}
-              redirectToUnauthenticated="/"
-            >
+            <SaifuLayout showNavigation={true} redirectToUnauthenticated="/">
+              <AppBar />
               {children}
-            </TickettoClientLayout>
+            </SaifuLayout>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

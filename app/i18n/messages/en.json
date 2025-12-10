@@ -3,6 +3,7 @@
     "upcoming": "Your upcoming events",
     "noTickets": "You don't have any event tickets yet.",
     "title": "Events",
+    "details": "Event Details",
     "notFound": "Event Not Found"
   },
   "tickets": {

@@ -1,39 +1,34 @@
 "use client";
 
-import { AppBar, IconButton, Menu, MenuItem, Toolbar } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 
 import { AuthenticationContext } from "../../hooks/useAuthentication";
 import { ClientAccountProvider } from "@ticketto/protocol";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { TickettoClientProvider } from "../../providers/TickettoClientProvider";
 import { VirtoWebAuthnService } from "../../lib/virto-connect";
 import { createClient } from "polkadot-api";
 import { getWsProvider } from "polkadot-api/ws-provider";
 import { useRouter } from "next/navigation";
 import { useTickettoConfig } from "../../hooks/config";
-import { useTranslations } from "next-intl";
 
-interface TickettoClientLayoutProps {
+interface SaifuLayoutProps {
   children: React.ReactNode;
   showNavigation?: boolean;
   redirectToAuthenticated?: string;
   redirectToUnauthenticated?: string;
 }
 
-export default function TickettoClientLayout({
+export default function SaifuLayout({
   children,
   showNavigation = false,
   redirectToAuthenticated = "/events",
   redirectToUnauthenticated = "/",
-}: TickettoClientLayoutProps) {
+}: SaifuLayoutProps) {
   const [accountProvider, setAccountProvider] = useState<
     ClientAccountProvider | undefined
   >(undefined);
   const [isLoading, setIsLoading] = useState(true);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const router = useRouter();
-  const t = useTranslations();
 
   // Create the Polkadot client (common for both authenticated and unauthenticated)
   const config = useTickettoConfig();
@@ -44,30 +39,6 @@ export default function TickettoClientLayout({
   );
 
   const authService = useMemo(() => new VirtoWebAuthnService(client), [client]);
-
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleEvents = () => {
-    handleMenuClose();
-    router.push("/events");
-  };
-
-  const handleProfile = () => {
-    handleMenuClose();
-    router.push("/profile");
-  };
-
-  const handleLogout = () => {
-    handleMenuClose();
-    authService.logout();
-    router.push("/");
-  };
 
   // Common authentication and client setup logic
   useEffect(() => {
@@ -86,7 +57,7 @@ export default function TickettoClientLayout({
           .finally(() => setIsLoading(false));
       } else {
         // This is unauthenticated mode - redirect to authenticated area
-        router.replace(redirectToAuthenticated);
+        router.push(redirectToAuthenticated);
         setIsLoading(false);
       }
     } else if (!user && redirectToUnauthenticated) {
@@ -121,32 +92,6 @@ export default function TickettoClientLayout({
         config={config}
         client={client}
       >
-        {showNavigation && (
-          <AppBar position="static">
-            <Toolbar>
-              <div style={{ flexGrow: 1 }} />
-              <IconButton
-                edge="end"
-                color="inherit"
-                onClick={handleMenuClick}
-                aria-label="menu"
-              >
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                <MenuItem onClick={handleEvents}>{t("events.title")}</MenuItem>
-                <MenuItem onClick={handleProfile}>
-                  {t("profile.title")}
-                </MenuItem>
-                <MenuItem onClick={handleLogout}>{t("auth.logout")}</MenuItem>
-              </Menu>
-            </Toolbar>
-          </AppBar>
-        )}
         {children}
       </TickettoClientProvider>
     </AuthenticationContext.Provider>

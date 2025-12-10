@@ -3,6 +3,7 @@
     "upcoming": "Tus próximos eventos",
     "noTickets": "Aún no tienes tickets para ningún evento.",
     "title": "Eventos",
+    "details": "Detalles del Evento",
     "notFound": "Evento No Encontrado"
   },
   "tickets": {
