@@ -7,6 +7,10 @@ name: Development build smoke test
     clearState: true
 # expo-dev-client opens its launcher; point it at the Metro server started by smoke.sh.
 - openLink: ${DEV_CLIENT_URL}
+# iOS may ask before handing a custom-scheme link to the app.
+- tapOn:
+    text: "Open"
+    optional: true
 - extendedWaitUntil:
     visible:
       id: "saifu-root"

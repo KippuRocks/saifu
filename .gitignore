@@ -30,9 +30,6 @@ build/
 *.tsbuildinfo
 *.tgz
 
-# Maestro
-.maestro-results/
-
 # local env files
 .env*.local
 

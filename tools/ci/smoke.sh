@@ -5,12 +5,12 @@
 #
 # Expects the development build to be installed already on the one running
 # emulator or booted simulator. Starts Metro, warms the bundle, forwards the port
-# on Android, and runs .maestro/smoke.yaml. Logs go to .maestro-results/.
+# on Android, and runs .maestro/smoke.yaml. Logs and screenshots go to build/maestro-results/.
 set -euo pipefail
 
 platform=${1:?usage: smoke.sh <android|ios>}
 root=$(cd "$(dirname "$0")/../.." && pwd)
-results="$root/.maestro-results"
+results="$root/build/maestro-results"
 mkdir -p "$results"
 cd "$root"
 
@@ -45,9 +45,28 @@ fi
 url="http://localhost:$port"
 encoded=$(node -p 'encodeURIComponent(process.argv[1])' "$url")
 
+capture() {
+  if [[ "$platform" == android ]]; then
+    adb exec-out screencap -p >"$results/screen.png" || true
+    adb logcat -d >"$results/logcat.txt" || true
+  else
+    xcrun simctl io booted screenshot "$results/screen.png" || true
+    xcrun simctl spawn booted log show --last 15m --style compact \
+      --predicate 'process == "Saifu"' >"$results/simulator.log" 2>&1 || true
+  fi
+}
+
+echo "opening $scheme://expo-development-client/?url=$encoded"
+status=0
 maestro test \
   --env "APP_ID=$app_id" \
   --env "DEV_CLIENT_URL=$scheme://expo-development-client/?url=$encoded" \
   --debug-output "$results/debug" \
   --format junit --output "$results/report.xml" \
-  .maestro/smoke.yaml
+  .maestro/smoke.yaml || status=$?
+if [[ $status -ne 0 ]]; then
+  capture
+  echo "--- metro.log (tail) ---" >&2
+  tail -n 80 "$results/metro.log" >&2 || true
+fi
+exit $status
