@@ -72,12 +72,20 @@ capture() {
   fi
 }
 
+# Maestro's iOS driver can be slow to start on a cold runner: allow it three
+# minutes, and run the flow a second time if the first attempt fails.
+export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
 status=0
-maestro test \
-  --env "APP_ID=$app_id" \
-  --debug-output "$results/debug" \
-  --format junit --output "$results/report.xml" \
-  .maestro/smoke.yaml || status=$?
+for attempt in 1 2; do
+  status=0
+  maestro test \
+    --env "APP_ID=$app_id" \
+    --debug-output "$results/debug-$attempt" \
+    --format junit --output "$results/report.xml" \
+    .maestro/smoke.yaml || status=$?
+  [[ $status -eq 0 ]] && break
+  echo "smoke flow attempt $attempt failed" >&2
+done
 if [[ $status -ne 0 ]]; then
   capture
   echo "--- metro.log (tail) ---" >&2

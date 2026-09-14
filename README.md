@@ -71,5 +71,57 @@ at `https://<domain>/.well-known/apple-app-site-association` and
 `https://<domain>/.well-known/assetlinks.json`. The domain, the Apple team and
 the release signing certificate are not yet decided.
 
-`@ticketto/*` packages are vendored from a pinned `libticketto` commit
-(`pnpm vendor:libticketto <commit>`; CI checks them with `pnpm vendor:check`).
+## The holder's credential
+
+Saifu is the only client holding a holder's credential (`REQ-CL-2`).
+
+- **Provisioning** (`src/holder/credential.ts`). On first use Saifu draws a
+  random 32-byte user id and creates a passkey, user verification required. The
+  holder's ledger account is the Kreivo Pass derivation of that user id. Nothing
+  is shown to write down.
+- **The passkey signer** signs the payload it is given — a profile signing
+  payload — with one biometric prompt per signature. The V0 challenger
+  (`src/holder/challenger.ts`) prefixes `ticketto/v0/registration` on the
+  registration ceremony only.
+- **On the device** (`src/holder/store.ts`) Saifu keeps the user id, the passkey's
+  credential id, the registration until the ledger accepts it, and the Kippu
+  session — in the platform's secure storage (`expo-secure-store`: the Keychain,
+  or the Keystore-backed store). No key: the passkey's private key never leaves
+  the platform authenticator.
+- **Registration** (`src/holder/register.ts`) is `register_credential` through the
+  Ticketto SDK over `binding-offchain`, sponsored through Kippu's relay
+  (`@kippu/sponsorship`). A repeated registration is accepted unchanged, so an
+  interrupted one is resubmitted.
+- **Linking** (`src/kippu/link.ts`) answers kippu-api's proof-of-control challenge
+  (`auth.holder.beginLink` / `completeLink`) with `signProofOfControl`.
+
+Service endpoints are configuration, with placeholders until hostnames are chosen:
+
+| Variable | Placeholder |
+|---|---|
+| `SAIFU_LEDGER_URL` | `https://ledger.kippu.example` |
+| `SAIFU_SPONSOR_URL` | `https://sponsor.kippu.example` |
+| `SAIFU_KIPPU_API_URL` | `https://api.kippu.example` |
+
+### System tests
+
+`test/system/` runs Saifu's holder flows against the real services: the ledger
+service (`ticketto-offchain`), the sponsor relay, and kippu-api wired to that
+ledger (`KIPPU_LEDGER_ENVIRONMENT=staging`). kippu-api's `development` wiring
+keeps its ledger inside its own process, where Saifu cannot write to it. The
+ledger service is private, so these tests are skipped unless
+`SAIFU_TEST_LEDGER_URL`, `SAIFU_TEST_SPONSOR_URL` and `SAIFU_TEST_KIPPU_API_URL`
+are set (and `SAIFU_TEST_RP_ID`, default `kippu.example`, matches the stack's
+holder RP id); kippu-e2e (`F-070`) runs them against its stack. Every other test
+uses `backend-memory` and F-003's simulated authenticator.
+
+## Vendored packages
+
+Cross-repository packages are not published. They are `pnpm pack` tarballs from
+pinned commits, checked by `pnpm vendor:check` in CI:
+
+- `@ticketto/sdk`, `profile-v0` and `binding-offchain` — and `backend-memory`,
+  `ledger-rules` and `log` for tests — from `libticketto`
+  (`pnpm vendor:libticketto <commit>`);
+- `@kippu/api` (router types, `C5`) and `@kippu/sponsorship` (the relay client)
+  from `kippu-api` (`pnpm vendor:kippu-api <commit>`).

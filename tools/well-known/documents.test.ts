@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { passkeyConfig } from "../../app.config.ts";
+import { endpointsConfig, PLACEHOLDER_ENDPOINTS, passkeyConfig } from "../../app.config.ts";
 import {
   appleAppSiteAssociation,
   assetLinks,
@@ -68,5 +68,19 @@ describe("RP id configuration", () => {
     for (const value of ["https://example.org", "example.org:443", "localhost", "example.org/x"]) {
       expect(() => passkeyConfig({ SAIFU_RP_ID: value }), value).toThrow();
     }
+  });
+});
+
+describe("service endpoint configuration", () => {
+  it("defaults to placeholders, and takes configured URLs", () => {
+    expect(endpointsConfig({})).toEqual(PLACEHOLDER_ENDPOINTS);
+    expect(endpointsConfig({ SAIFU_LEDGER_URL: "http://127.0.0.1:8080/" }).ledgerUrl).toBe(
+      "http://127.0.0.1:8080",
+    );
+  });
+
+  it("refuses anything that is not an http(s) URL", () => {
+    expect(() => endpointsConfig({ SAIFU_SPONSOR_URL: "ftp://x" })).toThrow();
+    expect(() => endpointsConfig({ SAIFU_KIPPU_API_URL: "not a url" })).toThrow();
   });
 });

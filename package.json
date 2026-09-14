@@ -22,26 +22,36 @@
     "deps:check": "expo install --check",
     "lint:copy": "node tools/copy-lint/cli.ts",
     "vendor:libticketto": "tools/vendor-libticketto.sh",
-    "vendor:check": "tools/vendor-libticketto.sh --check",
-    "well-known": "node tools/well-known/cli.ts"
+    "vendor:check": "tools/vendor-libticketto.sh --check && tools/vendor-kippu-api.sh --check",
+    "well-known": "node tools/well-known/cli.ts",
+    "vendor:kippu-api": "tools/vendor-kippu-api.sh"
   },
   "dependencies": {
+    "@kippu/sponsorship": "file:vendor/kippu-api/kippu-sponsorship-0.0.0.tgz",
     "@noble/hashes": "2.4.0",
+    "@ticketto/binding-offchain": "file:vendor/libticketto/ticketto-binding-offchain-0.0.0.tgz",
+    "@ticketto/profile-v0": "file:vendor/libticketto/ticketto-profile-v0-0.0.0.tgz",
+    "@ticketto/sdk": "file:vendor/libticketto/ticketto-sdk-0.0.0.tgz",
+    "@trpc/client": "11.18.0",
+    "@trpc/server": "11.18.0",
     "@virtonetwork/authenticators-webauthn": "1.2.7",
     "@virtonetwork/signer": "1.3.3",
     "expo": "57.0.22",
     "expo-constants": "57.0.18",
     "expo-crypto": "57.0.3",
     "expo-dev-client": "57.0.19",
+    "expo-secure-store": "57.0.4",
     "expo-status-bar": "57.0.1",
     "react": "19.2.3",
     "react-native": "0.86.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
+    "@kippu/api": "file:vendor/kippu-api/kippu-api-0.0.0.tgz",
     "@noble/curves": "2.4.0",
-    "@ticketto/profile-v0": "file:vendor/libticketto/ticketto-profile-v0-0.0.0.tgz",
-    "@ticketto/sdk": "file:vendor/libticketto/ticketto-sdk-0.0.0.tgz",
+    "@ticketto/backend-memory": "file:vendor/libticketto/ticketto-backend-memory-0.0.0.tgz",
+    "@ticketto/ledger-rules": "file:vendor/libticketto/ticketto-ledger-rules-0.0.0.tgz",
+    "@ticketto/log": "file:vendor/libticketto/ticketto-log-0.0.0.tgz",
     "@types/node": "24.13.4",
     "@types/react": "19.2.18",
     "oxc-parser": "0.149.0",
@@ -57,8 +67,12 @@
   },
   "pnpm": {
     "overrides": {
+      "@ticketto/sdk": "file:vendor/libticketto/ticketto-sdk-0.0.0.tgz",
       "@ticketto/profile-v0": "file:vendor/libticketto/ticketto-profile-v0-0.0.0.tgz",
-      "@ticketto/sdk": "file:vendor/libticketto/ticketto-sdk-0.0.0.tgz"
+      "@ticketto/binding-offchain": "file:vendor/libticketto/ticketto-binding-offchain-0.0.0.tgz",
+      "@ticketto/ledger-rules": "file:vendor/libticketto/ticketto-ledger-rules-0.0.0.tgz",
+      "@ticketto/log": "file:vendor/libticketto/ticketto-log-0.0.0.tgz",
+      "@ticketto/backend-memory": "file:vendor/libticketto/ticketto-backend-memory-0.0.0.tgz"
     }
   }
 }
