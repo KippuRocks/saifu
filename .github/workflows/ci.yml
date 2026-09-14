@@ -27,6 +27,20 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      # T-030-11: no user-visible string uses fee vocabulary (REQ-SP-1a) or
+      # claims trustless, tamper-proof or decentralised properties (REQ-TM-2).
+      - run: pnpm lint:copy
+      - name: A forbidden term added to a string fails the copy lint
+        run: |
+          for term in gas trustless; do
+            cp src/App.tsx "$RUNNER_TEMP/App.tsx"
+            printf '\nexport const probe = "No %s";\n' "$term" >> src/App.tsx
+            if pnpm --silent lint:copy; then
+              echo "the copy lint accepted \"$term\"" >&2
+              exit 1
+            fi
+            cp "$RUNNER_TEMP/App.tsx" src/App.tsx
+          done
       # Every native dependency matches the Expo SDK in use.
       - run: pnpm deps:check
       # Metro bundles and compiles to Hermes bytecode for both platforms.
