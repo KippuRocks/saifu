@@ -4,16 +4,27 @@
 appId: ${APP_ID}
 name: Development build smoke test
 ---
-# iOS may still ask before handing a custom-scheme link to the app.
-- extendedWaitUntil:
-    visible: "Open"
-    timeout: 15000
-    optional: true
-- tapOn:
-    text: "Open"
-    optional: true
-- extendedWaitUntil:
-    visible:
-      id: "saifu-root"
-    timeout: 600000
+# iOS asks before handing a custom-scheme link to the app, and the prompt can
+# appear some seconds after the link is opened: keep answering it until the
+# shell renders. A first load that fails transiently (the development client's
+# error screen, or React Native's) is retried with its Reload button.
+- repeat:
+    while:
+      notVisible:
+        id: "saifu-root"
+    times: 60
+    commands:
+      - tapOn:
+          text: "Open"
+          optional: true
+      - tapOn:
+          text: "Reload"
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: "saifu-root"
+          timeout: 10000
+          optional: true
+- assertVisible:
+    id: "saifu-root"
 - assertVisible: "Saifu"

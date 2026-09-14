@@ -34,9 +34,12 @@ curl -fsS "http://localhost:$port/status" | grep -q "packager-status:running" ||
   exit 1
 }
 
-# Warm Metro's transform cache so the app's first request does not time out.
-curl -fsS -o /dev/null --max-time 600 \
-  "http://localhost:$port/index.bundle?platform=$platform&dev=true&minify=false" || true
+# Warm Metro with the exact request a development build makes, so the app's
+# first load is served from cache instead of timing out on a cold transform.
+bundle="index.ts.bundle?platform=$platform&dev=true&hot=false&lazy=true"
+bundle+="&transform.engine=hermes&transform.bytecode=1&transform.routerRoot=app"
+bundle+="&unstable_transformProfile=hermes-stable"
+curl -fsS -o /dev/null --max-time 900 "http://localhost:$port/$bundle" || true
 
 if [[ "$platform" == android ]]; then
   adb reverse "tcp:$port" "tcp:$port"
