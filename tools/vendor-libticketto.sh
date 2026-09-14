@@ -65,6 +65,16 @@ if [[ "$mode" == check ]]; then
     mkdir -p "$work/expected/$name" "$work/actual/$name"
     tar -xzf "$tarball" -C "$work/expected/$name"
     tar -xzf "$out/$name" -C "$work/actual/$name"
+    # `pnpm pack` rewrites `workspace:*` ranges in no fixed key order, so manifests are
+    # compared with their keys sorted; every other file byte for byte.
+    for manifest in "$work/expected/$name/package/package.json" "$work/actual/$name/package/package.json"; do
+      node -e '
+        const fs = require("fs");
+        const sort = (v) => Array.isArray(v) ? v.map(sort) : v && typeof v === "object"
+          ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sort(v[k])])) : v;
+        fs.writeFileSync(process.argv[1], JSON.stringify(sort(JSON.parse(fs.readFileSync(process.argv[1], "utf8"))), null, 2));
+      ' "$manifest"
+    done
     if ! diff -r "$work/expected/$name" "$work/actual/$name" >/dev/null; then
       echo "vendor/libticketto/$name differs from libticketto at $resolved" >&2
       status=1
