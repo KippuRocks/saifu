@@ -28,6 +28,10 @@ name: Development build smoke test
 - assertVisible:
     id: "saifu-root"
 - assertVisible: "Saifu"
+# T-030-04: a first run shows the recovery disclosure before any passkey exists.
+- assertVisible:
+    id: "recovery-disclosure"
+- assertVisible: "Only you can reach your tickets"
 # T-030-02: the native passkey bridge is linked into the build and reports the
 # platform as passkey-capable.
 - assertVisible:
