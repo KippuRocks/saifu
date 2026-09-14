@@ -34,3 +34,6 @@ build/
 .env*.local
 
 .DS_Store
+
+# Vendored cross-repository packages are committed
+!vendor/libticketto/*.tgz

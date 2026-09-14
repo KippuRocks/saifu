@@ -28,3 +28,7 @@ name: Development build smoke test
 - assertVisible:
     id: "saifu-root"
 - assertVisible: "Saifu"
+# T-030-02: the native passkey bridge is linked into the build and reports the
+# platform as passkey-capable.
+- assertVisible:
+    id: "passkey-bridge-linked"

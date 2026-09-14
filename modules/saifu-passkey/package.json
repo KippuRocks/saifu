@@ -1,0 +1,7 @@
+{
+  "name": "saifu-passkey",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Native passkey bridge for Saifu: ASAuthorization on iOS, Credential Manager on Android",
+  "main": "index.ts"
+}

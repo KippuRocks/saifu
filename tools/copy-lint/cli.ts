@@ -4,7 +4,7 @@
 
 import { scan } from "./scan.ts";
 
-const DEFAULT_PATHS = ["index.ts", "src", "app.json"];
+const DEFAULT_PATHS = ["index.ts", "src", "modules", "app.json", "app.config.ts"];
 
 const paths = process.argv.slice(2);
 const violations = scan(process.cwd(), paths.length > 0 ? paths : DEFAULT_PATHS);

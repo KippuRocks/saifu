@@ -46,6 +46,17 @@ jobs:
       # Metro bundles and compiles to Hermes bytecode for both platforms.
       - run: pnpm bundle:check
 
+  vendor:
+    name: Vendored libticketto reproduces from its pinned commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: pnpm vendor:check
+
   # T-030-01: a development build (expo-dev-client, Debug) is generated with
   # `expo prebuild`, built locally on the runner, installed on an emulator, and
   # driven by Maestro. No Expo or EAS account is involved.

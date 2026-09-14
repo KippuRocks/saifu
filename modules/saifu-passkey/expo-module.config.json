@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["SaifuPasskeyModule"]
+  },
+  "android": {
+    "modules": ["rocks.kippu.saifu.passkey.SaifuPasskeyModule"]
+  }
+}

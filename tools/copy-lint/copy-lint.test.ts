@@ -107,6 +107,8 @@ describe("scan", () => {
   });
 
   it("passes the app as it stands", () => {
-    expect(found(scan(process.cwd(), ["index.ts", "src", "app.json"]))).toEqual([]);
+    expect(
+      found(scan(process.cwd(), ["index.ts", "src", "modules", "app.json", "app.config.ts"])),
+    ).toEqual([]);
   });
 });
