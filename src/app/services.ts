@@ -2,12 +2,15 @@
 // configuration (app.config.ts), the device's secure storage, and the ledger
 // and Kippu clients over them.
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Result, Ticketto } from "@ticketto/sdk";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import { type HolderCredential, holderCredential } from "../holder/credential.ts";
 import { registerHolderCredential } from "../holder/register.ts";
 import { type HolderStore, secureHolderStore } from "../holder/store.ts";
+import { type HoldingsCache, holdingsCache } from "../holdings/cache.ts";
+import { type LoadedHoldings, loadHoldings } from "../holdings/load.ts";
 import { type KippuClient, kippuClient } from "../kippu/client.ts";
 import { linkHolder } from "../kippu/link.ts";
 import { connectLedger } from "../ledger/ticketto.ts";
@@ -51,6 +54,9 @@ export interface HolderServices {
   credential(): Promise<HolderCredential>;
   ledger(): Promise<Result<Ticketto>>;
   kippu(): Promise<KippuClient>;
+  readonly holdings: HoldingsCache;
+  /** The linked holder's tickets: Kippu's copy, else the device cache. */
+  loadHoldings(account: string): Promise<LoadedHoldings>;
   /** Registers the credential on the ledger if needed, then links it to Kippu. */
   provisionAndLink(): Promise<Result<HolderCredential>>;
 }
@@ -68,12 +74,23 @@ export function holderServices(config: BuildConfig = buildConfig()): HolderServi
     const record = await store.load();
     return kippuClient({ url: config.kippuApiUrl, token: () => record?.kippuSession?.token });
   };
+  const cache = holdingsCache(AsyncStorage);
   return {
     config,
     store,
     credential,
     ledger,
     kippu,
+    holdings: cache,
+    async loadHoldings(account) {
+      const [client, connected] = await Promise.all([kippu(), ledger().catch(() => null)]);
+      return loadHoldings({
+        kippu: client,
+        cache,
+        account,
+        assurance: connected?.ok ? connected.value.assurance() : null,
+      });
+    },
     async provisionAndLink() {
       const holder = await credential();
       const connected = await ledger();

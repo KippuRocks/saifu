@@ -1,18 +1,25 @@
 import { holderAccountId } from "@ticketto/profile-v0";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { type HolderPhase, phaseFor } from "./app/holder-state.ts";
 import { holderServices } from "./app/services.ts";
+import { ticketDetail } from "./holdings/detail.ts";
+import type { LoadedHoldings } from "./holdings/load.ts";
+import type { HoldingView } from "./holdings/types.ts";
 import { passkeysAvailable } from "./passkey/install.ts";
+import { Holdings } from "./screens/Holdings.tsx";
 import { Onboarding } from "./screens/Onboarding.tsx";
 import { Settings } from "./screens/Settings.tsx";
+import { TicketDetail } from "./screens/TicketDetail.tsx";
 
 /** The application shell: onboarding until the holder's credential is registered and linked. */
 export function App() {
   const services = useMemo(() => holderServices(), []);
   const [phase, setPhase] = useState<HolderPhase>({ kind: "loading" });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [loaded, setLoaded] = useState<LoadedHoldings | null>(null);
+  const [open, setOpen] = useState<HoldingView | null>(null);
 
   const refresh = useCallback(async () => {
     const record = await services.store.load();
@@ -35,6 +42,16 @@ export function App() {
     }
   }, [services, refresh]);
 
+  const account = phase.kind === "ready" ? phase.account : null;
+  const reload = useCallback(async () => {
+    if (account === null) return;
+    setLoaded(await services.loadHoldings(account));
+  }, [services, account]);
+
+  useEffect(() => {
+    reload().catch(() => setLoaded({ source: "none", error: null }));
+  }, [reload]);
+
   return (
     <View style={styles.root} testID="saifu-root">
       {passkeysAvailable ? (
@@ -45,17 +62,23 @@ export function App() {
       ) : phase.kind === "ready" ? (
         settingsOpen ? (
           <Settings account={phase.account} onClose={() => setSettingsOpen(false)} />
+        ) : open !== null ? (
+          <TicketDetail
+            detail={ticketDetail(
+              open,
+              loaded !== null && loaded.source !== "none" ? loaded.entry.assurance : null,
+            )}
+            onClose={() => setOpen(null)}
+          />
         ) : (
-          <View style={styles.home} testID="home">
-            <Text style={styles.brand}>Saifu</Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setSettingsOpen(true)}
-              testID="open-settings"
-            >
-              <Text style={styles.link}>Settings</Text>
-            </Pressable>
-          </View>
+          <Holdings
+            loaded={loaded}
+            onOpen={setOpen}
+            onRefresh={() => {
+              reload().catch(() => {});
+            }}
+            onSettings={() => setSettingsOpen(true)}
+          />
         )
       ) : (
         <Onboarding
@@ -73,7 +96,5 @@ export function App() {
 const styles = StyleSheet.create({
   root: { flex: 1, paddingTop: 48 },
   brand: { fontSize: 32, fontWeight: "600", padding: 24 },
-  home: { flex: 1 },
-  link: { fontSize: 16, color: "#1f5fbf", paddingHorizontal: 24 },
   marker: { width: 1, height: 1 },
 });
