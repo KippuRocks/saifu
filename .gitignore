@@ -1,0 +1,39 @@
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Generated native projects (continuous native generation: `expo prebuild`)
+/ios
+/android
+.kotlin/
+
+# Signing material never belongs here
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# Build outputs
+build/
+*.apk
+*.app
+*.tsbuildinfo
+*.tgz
+
+# Maestro
+.maestro-results/
+
+# local env files
+.env*.local
+
+.DS_Store

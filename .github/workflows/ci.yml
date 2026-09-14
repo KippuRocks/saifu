@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, typecheck, test, bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      # Every native dependency matches the Expo SDK in use.
+      - run: pnpm deps:check
+      # Metro bundles and compiles to Hermes bytecode for both platforms.
+      - run: pnpm bundle:check
+
+  # T-030-01: a development build (expo-dev-client, Debug) is generated with
+  # `expo prebuild`, built locally on the runner, installed on an emulator, and
+  # driven by Maestro. No Expo or EAS account is involved.
+  android:
+    name: Android development build — install and smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v6
+      - run: pnpm install --frozen-lockfile
+      - name: Generate the native project
+        run: pnpm exec expo prebuild --platform android --clean --no-install
+      - name: Build the development build
+        working-directory: android
+        run: ./gradlew assembleDebug -PreactNativeArchitectures=x86_64 --no-daemon
+      - run: tools/ci/install-maestro.sh
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install on an emulator and run Maestro
+        uses: ReactiveCircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: adb install -r android/app/build/outputs/apk/debug/app-debug.apk && tools/ci/smoke.sh android
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-android
+          path: .maestro-results
+          if-no-files-found: ignore
+
+  ios:
+    name: iOS development build — install and smoke test
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: pnpm install --frozen-lockfile
+      - name: Generate the native project
+        run: pnpm exec expo prebuild --platform ios --clean
+      - name: Build the development build for the simulator
+        run: |
+          set -o pipefail
+          xcodebuild -version
+          xcodebuild \
+            -workspace ios/Saifu.xcworkspace \
+            -scheme Saifu \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/ios \
+            ONLY_ACTIVE_ARCH=YES \
+            build | tail -n 200
+      - run: tools/ci/install-maestro.sh
+      - name: Install on a simulator and run Maestro
+        run: |
+          udid=$(tools/ci/boot-simulator.sh)
+          xcrun simctl install "$udid" build/ios/Build/Products/Debug-iphonesimulator/Saifu.app
+          tools/ci/smoke.sh ios
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-ios
+          path: .maestro-results
+          if-no-files-found: ignore

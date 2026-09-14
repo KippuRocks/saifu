@@ -1,0 +1,18 @@
+# T-030-01 — the development build installs, loads its JavaScript from Metro, and
+# renders the application shell. Run by tools/ci/smoke.sh on both platforms.
+appId: ${APP_ID}
+name: Development build smoke test
+---
+- launchApp:
+    clearState: true
+# expo-dev-client opens its launcher; point it at the Metro server started by smoke.sh.
+- openLink: ${DEV_CLIENT_URL}
+- extendedWaitUntil:
+    visible:
+      id: "saifu-root"
+    timeout: 600000
+# First launch of a development build shows the developer menu's introduction.
+- tapOn:
+    text: "Continue"
+    optional: true
+- assertVisible: "Saifu"
