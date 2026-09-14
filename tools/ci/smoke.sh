@@ -52,6 +52,9 @@ echo "opening $link"
 if [[ "$platform" == android ]]; then
   adb shell am start -W -a android.intent.action.VIEW -d "'$link'" "$app_id"
 else
+  # With the app already in front, iOS hands it its own link without asking.
+  xcrun simctl launch booted "$app_id"
+  sleep 5
   xcrun simctl openurl booted "$link"
 fi
 
