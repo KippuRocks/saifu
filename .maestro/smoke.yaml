@@ -11,12 +11,23 @@ name: Development build smoke test
 - tapOn:
     text: "Open"
     optional: true
-- extendedWaitUntil:
-    visible:
-      id: "saifu-root"
-    timeout: 600000
-# First launch of a development build shows the developer menu's introduction.
-- tapOn:
-    text: "Continue"
-    optional: true
+# The first launch of a development build covers the app with the developer
+# menu's introduction, which hides the app from the accessibility tree. Dismiss
+# it whenever it appears, until the shell is visible.
+- repeat:
+    while:
+      notVisible:
+        id: "saifu-root"
+    times: 60
+    commands:
+      - tapOn:
+          text: "Continue"
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: "saifu-root"
+          timeout: 10000
+          optional: true
+- assertVisible:
+    id: "saifu-root"
 - assertVisible: "Saifu"

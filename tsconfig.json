@@ -12,5 +12,13 @@
     "forceConsistentCasingInFileNames": true,
     "allowJs": false
   },
-  "include": ["index.ts", "src", "tools", "test", "vitest.config.ts", "expo-env.d.ts"]
+  "include": [
+    "index.ts",
+    "src",
+    "tools",
+    "test",
+    "vitest.config.ts",
+    "expo-env.d.ts",
+    ".expo/types/**/*.ts"
+  ]
 }
