@@ -20,10 +20,18 @@
     "test": "vitest run",
     "bundle:check": "expo export --platform ios --platform android --output-dir .expo/export-check",
     "deps:check": "expo install --check",
-    "lint:copy": "node tools/copy-lint/cli.ts"
+    "lint:copy": "node tools/copy-lint/cli.ts",
+    "vendor:libticketto": "tools/vendor-libticketto.sh",
+    "vendor:check": "tools/vendor-libticketto.sh --check",
+    "well-known": "node tools/well-known/cli.ts"
   },
   "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "@virtonetwork/authenticators-webauthn": "1.2.7",
+    "@virtonetwork/signer": "1.3.3",
     "expo": "57.0.22",
+    "expo-constants": "57.0.18",
+    "expo-crypto": "57.0.3",
     "expo-dev-client": "57.0.19",
     "expo-status-bar": "57.0.1",
     "react": "19.2.3",
@@ -31,6 +39,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
+    "@noble/curves": "2.4.0",
+    "@ticketto/profile-v0": "file:vendor/libticketto/ticketto-profile-v0-0.0.0.tgz",
+    "@ticketto/sdk": "file:vendor/libticketto/ticketto-sdk-0.0.0.tgz",
     "@types/node": "24.13.4",
     "@types/react": "19.2.18",
     "oxc-parser": "0.149.0",
@@ -42,6 +53,12 @@
       "exclude": [
         "typescript"
       ]
+    }
+  },
+  "pnpm": {
+    "overrides": {
+      "@ticketto/profile-v0": "file:vendor/libticketto/ticketto-profile-v0-0.0.0.tgz",
+      "@ticketto/sdk": "file:vendor/libticketto/ticketto-sdk-0.0.0.tgz"
     }
   }
 }

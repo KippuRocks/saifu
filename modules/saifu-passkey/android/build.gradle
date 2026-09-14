@@ -1,0 +1,21 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'rocks.kippu.saifu'
+version = '0.0.0'
+
+android {
+  namespace "rocks.kippu.saifu.passkey"
+  defaultConfig {
+    versionCode 1
+    versionName "0.0.0"
+  }
+}
+
+dependencies {
+  implementation "androidx.credentials:credentials:1.6.0"
+  // Passkeys on Android 13 and below are served by Google Play services.
+  implementation "androidx.credentials:credentials-play-services-auth:1.6.0"
+}

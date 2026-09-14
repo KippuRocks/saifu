@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/KippuRocks/libticketto.git",
+  "commit": "008cbee7bfe5f2f0a2531a851b64c97068f7230f",
+  "packages": [
+    {
+      "file": "ticketto-profile-v0-0.0.0.tgz",
+      "sha256": "23af6dd79dbb9481fb23bdadaecb486d254203e9e22b344ebe48545e68bd7c28"
+    },
+    {
+      "file": "ticketto-sdk-0.0.0.tgz",
+      "sha256": "bade51f04671e49a90db4075b8cd6557cdd57177d46ce1d5f078c9d5c9cf784e"
+    }
+  ]
+}
