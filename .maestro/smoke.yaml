@@ -6,7 +6,8 @@ name: Development build smoke test
 ---
 # iOS asks before handing a custom-scheme link to the app, and the prompt can
 # appear some seconds after the link is opened: keep answering it until the
-# shell renders.
+# shell renders. A first load that fails transiently (the development client's
+# error screen, or React Native's) is retried with its Reload button.
 - repeat:
     while:
       notVisible:
@@ -15,6 +16,9 @@ name: Development build smoke test
     commands:
       - tapOn:
           text: "Open"
+          optional: true
+      - tapOn:
+          text: "Reload"
           optional: true
       - extendedWaitUntil:
           visible:
