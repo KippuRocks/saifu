@@ -4,7 +4,7 @@ import { defineConfig } from "vitest/config";
 // runs in the Maestro flows under `.maestro/`.
 export default defineConfig({
   test: {
-    include: ["src/**/*.test.ts", "tools/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "tools/**/*.test.ts", "test/**/*.test.ts"],
     passWithNoTests: true,
   },
 });

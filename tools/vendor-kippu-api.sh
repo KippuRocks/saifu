@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
-# Vendors @ticketto/* packages from a pinned libticketto
-# commit.
+# Vendors @kippu/api — the types of the Kippu API's tRPC router, contract C5 (F-020,
+# T-020-04) — and @kippu/sponsorship — the sponsor relay's client (F-023, T-023-07) —
+# from a pinned kippu-api commit, as Ibento and ticketto-offchain vendor theirs.
 #
-#   tools/vendor-libticketto.sh <commit>   build and pack the packages at <commit> into
-#                                          vendor/libticketto/, and record the commit
-#   tools/vendor-libticketto.sh --check    rebuild at the recorded commit and fail if the
-#                                          vendored packages' contents differ
+#   tools/vendor-kippu-api.sh <commit>   build and pack the package at <commit> into
+#                                        vendor/kippu-api/, and record the commit
+#   tools/vendor-kippu-api.sh --check    rebuild at the recorded commit and fail if the
+#                                        vendored package's contents differ
 #
-# The packages are not published to any registry, and this repository must build
-# without access to kippu-docs. `pnpm pack` rewrites libticketto's `workspace:*`
-# ranges to plain versions, and package.json resolves every name to its tarball.
+# Neither package is published to any registry. @kippu/api is declarations only, and
+# declares @trpc/server as a peer dependency, which this repository installs at the same
+# version. @kippu/sponsorship declares @ticketto/sdk and @ticketto/profile-v0 as peer
+# dependencies, which resolve to this repository's vendored libticketto tarballs.
 set -euo pipefail
 
 root=$(cd "$(dirname "$0")/.." && pwd)
-out="$root/vendor/libticketto"
-repository="https://github.com/KippuRocks/libticketto.git"
-packages=(sdk profile-v0 binding-offchain ledger-rules log backend-memory)
+out="$root/vendor/kippu-api"
+repository="https://github.com/KippuRocks/kippu-api.git"
+packages=(api sponsorship)
 
 mode=vendor
 if [[ "${1:-}" == "--check" ]]; then
@@ -42,9 +44,10 @@ resolved=$(git -C "$work/src" rev-parse HEAD)
 
 (
   cd "$work/src"
-  pnpm install --frozen-lockfile --filter "@ticketto/backend-memory..." --filter "@ticketto/binding-offchain..." >/dev/null
+  # The declarations are emitted from the server's router, so the whole workspace installs.
+  pnpm install --frozen-lockfile >/dev/null
   for package in "${packages[@]}"; do
-    pnpm --filter "@ticketto/$package" build >/dev/null
+    pnpm --filter "@kippu/$package" build >/dev/null
   done
 )
 
@@ -65,12 +68,22 @@ if [[ "$mode" == check ]]; then
     mkdir -p "$work/expected/$name" "$work/actual/$name"
     tar -xzf "$tarball" -C "$work/expected/$name"
     tar -xzf "$out/$name" -C "$work/actual/$name"
+    # `pnpm pack` rewrites `workspace:*` ranges in no fixed key order, so manifests are
+    # compared with their keys sorted; every other file byte for byte.
+    for manifest in "$work/expected/$name/package/package.json" "$work/actual/$name/package/package.json"; do
+      node -e '
+        const fs = require("fs");
+        const sort = (v) => Array.isArray(v) ? v.map(sort) : v && typeof v === "object"
+          ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sort(v[k])])) : v;
+        fs.writeFileSync(process.argv[1], JSON.stringify(sort(JSON.parse(fs.readFileSync(process.argv[1], "utf8"))), null, 2));
+      ' "$manifest"
+    done
     if ! diff -r "$work/expected/$name" "$work/actual/$name" >/dev/null; then
-      echo "vendor/libticketto/$name differs from libticketto at $resolved" >&2
+      echo "vendor/kippu-api/$name differs from kippu-api at $resolved" >&2
       status=1
     fi
   done
-  [[ $status -eq 0 ]] && echo "vendor/libticketto matches libticketto at $resolved"
+  [[ $status -eq 0 ]] && echo "vendor/kippu-api matches kippu-api at $resolved"
   exit $status
 fi
 
@@ -94,4 +107,4 @@ writeFileSync(
   `${JSON.stringify({ repository, commit, packages }, null, 2)}\n`,
 );
 NODE
-echo "vendored libticketto at $resolved into vendor/libticketto"
+echo "vendored kippu-api at $resolved into vendor/kippu-api"

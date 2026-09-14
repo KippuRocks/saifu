@@ -37,3 +37,4 @@ build/
 
 # Vendored cross-repository packages are committed
 !vendor/libticketto/*.tgz
+!vendor/kippu-api/*.tgz
