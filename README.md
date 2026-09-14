@@ -26,6 +26,7 @@ Requires Node 24 and pnpm 10.17.1.
 
     pnpm install
     pnpm lint          # Biome
+    pnpm lint:copy     # no fee vocabulary or trust claims in user-visible strings
     pnpm typecheck     # TypeScript
     pnpm test          # Vitest, on Node
     pnpm deps:check    # native dependencies match the Expo SDK

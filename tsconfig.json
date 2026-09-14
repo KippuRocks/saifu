@@ -10,7 +10,9 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
-    "allowJs": false
+    "allowJs": false,
+    "allowImportingTsExtensions": true,
+    "types": ["node"]
   },
   "include": [
     "index.ts",

@@ -19,7 +19,8 @@
     "format": "biome check --write .",
     "test": "vitest run",
     "bundle:check": "expo export --platform ios --platform android --output-dir .expo/export-check",
-    "deps:check": "expo install --check"
+    "deps:check": "expo install --check",
+    "lint:copy": "node tools/copy-lint/cli.ts"
   },
   "dependencies": {
     "expo": "57.0.22",
@@ -32,6 +33,7 @@
     "@biomejs/biome": "2.5.13",
     "@types/node": "24.13.4",
     "@types/react": "19.2.18",
+    "oxc-parser": "0.149.0",
     "typescript": "7.0.2",
     "vitest": "5.0.0"
   },
