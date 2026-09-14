@@ -1,0 +1,19 @@
+# T-030-01 — the development build installs, loads its JavaScript from Metro, and
+# renders the application shell. Run by tools/ci/smoke.sh on both platforms,
+# which opens the development build on the Metro server before this flow starts.
+appId: ${APP_ID}
+name: Development build smoke test
+---
+# iOS may still ask before handing a custom-scheme link to the app.
+- extendedWaitUntil:
+    visible: "Open"
+    timeout: 15000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "saifu-root"
+    timeout: 600000
+- assertVisible: "Saifu"

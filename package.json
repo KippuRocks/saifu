@@ -1,0 +1,45 @@
+{
+  "name": "saifu",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Saifu — the holder app, and the only client holding holder credentials",
+  "type": "module",
+  "main": "index.ts",
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "prebuild": "expo prebuild --clean",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "biome ci .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "bundle:check": "expo export --platform ios --platform android --output-dir .expo/export-check",
+    "deps:check": "expo install --check"
+  },
+  "dependencies": {
+    "expo": "57.0.22",
+    "expo-dev-client": "57.0.19",
+    "expo-status-bar": "57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.13",
+    "@types/node": "24.13.4",
+    "@types/react": "19.2.18",
+    "typescript": "7.0.2",
+    "vitest": "5.0.0"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "typescript"
+      ]
+    }
+  }
+}
