@@ -44,6 +44,16 @@ fi
 
 url="http://localhost:$port"
 encoded=$(node -p 'encodeURIComponent(process.argv[1])' "$url")
+# disableOnboarding and disableAutoLaunch keep the developer menu from covering
+# the app on its first launch.
+link="$scheme://expo-development-client/?url=$encoded&disableOnboarding=1&disableAutoLaunch=1"
+
+echo "opening $link"
+if [[ "$platform" == android ]]; then
+  adb shell am start -W -a android.intent.action.VIEW -d "'$link'" "$app_id"
+else
+  xcrun simctl openurl booted "$link"
+fi
 
 capture() {
   if [[ "$platform" == android ]]; then
@@ -56,11 +66,9 @@ capture() {
   fi
 }
 
-echo "opening $scheme://expo-development-client/?url=$encoded"
 status=0
 maestro test \
   --env "APP_ID=$app_id" \
-  --env "DEV_CLIENT_URL=$scheme://expo-development-client/?url=$encoded" \
   --debug-output "$results/debug" \
   --format junit --output "$results/report.xml" \
   .maestro/smoke.yaml || status=$?
