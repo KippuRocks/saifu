@@ -89,6 +89,7 @@ export function holderServices(config: BuildConfig = buildConfig()): HolderServi
         cache,
         account,
         assurance: connected?.ok ? connected.value.assurance() : null,
+        ledger: connected?.ok ? connected.value : null,
       });
     },
     async provisionAndLink() {
