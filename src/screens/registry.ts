@@ -29,6 +29,7 @@ export const SCREENS = {
   "holder.onboarding": { title: "Set up Saifu", route: null, params: [] },
   "tickets.list": { title: "Your tickets", route: null, params: [] },
   "ticket.detail": { title: "Ticket", route: null, params: ["ticket"] },
+  "ticket.pass": { title: "Access pass", route: null, params: ["ticket"] },
   "settings.main": { title: "Settings", route: null, params: [] },
   "checkout.link": {
     title: "Pair with your checkout",

@@ -46,8 +46,10 @@
     "expo-linking": "57.0.10",
     "expo-secure-store": "57.0.4",
     "expo-status-bar": "57.0.1",
+    "qrcode": "1.5.4",
     "react": "19.2.3",
-    "react-native": "0.86.3"
+    "react-native": "0.86.3",
+    "react-native-svg": "15.15.4"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
@@ -57,7 +59,9 @@
     "@ticketto/ledger-rules": "file:vendor/libticketto/ticketto-ledger-rules-0.0.0.tgz",
     "@ticketto/log": "file:vendor/libticketto/ticketto-log-0.0.0.tgz",
     "@types/node": "24.13.4",
+    "@types/qrcode": "1.5.6",
     "@types/react": "19.2.18",
+    "jsqr": "1.4.0",
     "oxc-parser": "0.149.0",
     "typescript": "7.0.2",
     "vitest": "5.0.0"
