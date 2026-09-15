@@ -29,6 +29,17 @@ export const SCREENS = {
   "holder.onboarding": { title: "Set up Saifu", route: null, params: [] },
   "tickets.list": { title: "Your tickets", route: null, params: [] },
   "ticket.detail": { title: "Ticket", route: null, params: ["ticket"] },
+  "ticket.transfer": { title: "Transfer a ticket", route: null, params: ["ticket"] },
+  "ticket.transfer.warning": {
+    title: "Transfer warning",
+    route: null,
+    params: ["ticket", "receiver"],
+  },
+  "ticket.transfer.sending": {
+    title: "Transferring",
+    route: null,
+    params: ["ticket", "receiver"],
+  },
   "tickets.receive": { title: "Receive a ticket", route: null, params: [] },
   "ticket.pass": { title: "Access pass", route: null, params: ["ticket"] },
   "settings.main": { title: "Settings", route: null, params: [] },

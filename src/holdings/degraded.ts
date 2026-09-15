@@ -88,6 +88,8 @@ export function ledgerTicketDetail(
     provenance: ticket.provenance === "Granted" ? "Granted by the organiser" : "Purchased",
     policy: policyText(ticket.policy),
     restrictions: restrictionsText(ticket.restrictions),
+    transferable: !ticket.restrictions.cannotTransfer,
+    eventId: ticket.event,
     attendances: attendancesText(ticket.attendances),
     assurance: declaration === null ? null : assuranceLevel(declaration),
   };

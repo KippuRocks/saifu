@@ -16,6 +16,14 @@ import { type LoadedHoldings, loadHoldings } from "../holdings/load.ts";
 import { type KippuClient, kippuClient } from "../kippu/client.ts";
 import { linkHolder } from "../kippu/link.ts";
 import { connectLedger } from "../ledger/ticketto.ts";
+import { exchangedAccounts } from "../transfer/exchanged.ts";
+import { checkReceiver, type ReceiverCheck } from "../transfer/receiver.ts";
+import {
+  type TransferFlow,
+  type TransferRequest,
+  type TransferStep,
+  transferFlow,
+} from "../transfer/transfer.ts";
 
 export interface BuildConfig {
   readonly rpId: string;
@@ -71,6 +79,19 @@ export interface HolderServices {
   endSession(): Promise<void>;
   /** Links the holder's account to an Ichiba checkout, and gets the pairing code. */
   linkCheckout(handoffToken: string): Promise<HandoffOutcome>;
+  /** Checks who would receive a ticket: a scanned code or a typed account. */
+  checkReceiver(input: string, holder: string): Promise<ReceiverCheck>;
+  /**
+   * A transfer of a held ticket: signed with the passkey, sponsored through the
+   * relay, submitted directly to the ledger, then Kippu's copy awaited.
+   * `seenCursor` is the copy's cursor when the holdings were read.
+   */
+  transfer(
+    request: TransferRequest,
+    holder: string,
+    seenCursor: string | undefined,
+    onStep: (step: TransferStep) => void,
+  ): Promise<TransferFlow | { readonly failed: string }>;
   /** Redeems an invitation for the holder, and waits for Kippu's copy to show the ticket. */
   redeemInvitation(token: string): Promise<InvitationOutcome>;
 }
@@ -124,6 +145,35 @@ export function holderServices(config: BuildConfig = buildConfig()): HolderServi
       if (record === null) return;
       const { kippuSession: _, ...rest } = record;
       await store.save(rest);
+    },
+    async checkReceiver(input, holder) {
+      const connected = await ledger().catch(() => null);
+      return checkReceiver(input, holder, connected?.ok ? connected.value : null);
+    },
+    async transfer(request, holder, seenCursor, onStep) {
+      const connected = await connectLedger({
+        ledgerUrl: config.ledgerUrl,
+        sponsorUrl: config.sponsorUrl,
+        rpId: config.rpId,
+        receiptCursor: () => (seenCursor === "" ? undefined : seenCursor),
+      }).catch(() => null);
+      if (connected === null || !connected.ok) return { failed: "ERR-LedgerUnavailable" };
+      const [signer, client] = await Promise.all([credential(), kippu()]);
+      return transferFlow(request, {
+        ledger: connected.value,
+        signer: signer.signer,
+        exchanged: exchangedAccounts(AsyncStorage, holder),
+        copy: {
+          async waitFor(cursor) {
+            for (let i = 0; i < 3; i++) {
+              if ((await client.derived.waitFor.query({ cursor, timeout: 10_000 })).reached)
+                return true;
+            }
+            return false;
+          },
+        },
+        onStep,
+      });
     },
     async linkCheckout(handoffToken) {
       return linkCheckoutHandoff(await kippu(), handoffToken);
