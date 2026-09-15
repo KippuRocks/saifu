@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import type { ScreenId } from "./registry.ts";
 
 export interface ScreenProps {
@@ -15,14 +15,28 @@ export interface ScreenProps {
  * and marks the screen settled — nothing loading, no ceremony in progress, and
  * no animation, since Saifu's screens run none — with a `<screenId>.settled`
  * element, so kippu-e2e captures each journey step once it has settled.
+ *
+ * On Saifu Web the root also carries the `screenId` as `data-screen`, as the
+ * web clients do, beside `data-testid` (T-030-18; `F-070` plan §5.4).
  */
 export function Screen({ id, busy = false, children }: ScreenProps) {
   return (
-    <View accessibilityState={{ busy }} collapsable={false} style={styles.screen} testID={id}>
+    <View
+      accessibilityState={{ busy }}
+      collapsable={false}
+      style={styles.screen}
+      testID={id}
+      {...webScreenId(id)}
+    >
       {children}
       {busy ? null : <View collapsable={false} style={styles.marker} testID={`${id}.settled`} />}
     </View>
   );
+}
+
+/** react-native-web renders `dataSet` as `data-*` attributes; native ignores it. */
+function webScreenId(id: ScreenId): object {
+  return Platform.OS === "web" ? { dataSet: { screen: id } } : {};
 }
 
 const styles = StyleSheet.create({

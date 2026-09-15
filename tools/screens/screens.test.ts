@@ -32,7 +32,7 @@ describe("T-030-15 screen manifest", () => {
     expect(manifest).toEqual({
       format: "kippu.screens/1",
       app: "saifu",
-      platform: "native",
+      platforms: ["native", "web"],
       screens: [
         {
           screenId: "a.one",

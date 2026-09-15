@@ -1,5 +1,12 @@
 // Builds `screens.json`: Saifu's screen manifest (T-030-15; F-070 plan §5.4), in
 // the format Ibento's uses (`kippu.screens/1`).
+//
+// Saifu is one app on two platforms (T-030-18): the native app and Saifu Web
+// render the same screens from the same router. So the manifest names both
+// platforms, and each screen entry holds for both — the same `screenId` (the
+// root's `testID` natively; `data-screen` and `data-testid` on the web) and the
+// same route, which natively is a universal link on the Saifu origin and on the
+// web is that page's address.
 
 import { SCREENS } from "../../src/screens/registry.ts";
 import type { Edge, Extracted, Problem } from "./extract.ts";
@@ -16,7 +23,8 @@ export interface ManifestScreen {
 export interface Manifest {
   readonly format: "kippu.screens/1";
   readonly app: "saifu";
-  readonly platform: "native";
+  /** Where every screen below is rendered, with the same id and route. */
+  readonly platforms: readonly ["native", "web"];
   /** In the router's declaration order. */
   readonly screens: readonly ManifestScreen[];
 }
@@ -77,7 +85,7 @@ export function buildManifest(
     manifest: {
       format: "kippu.screens/1",
       app: "saifu",
-      platform: "native",
+      platforms: ["native", "web"],
       screens: Object.entries(screens).map(([screenId, screen]) => ({
         screenId,
         route: screen.route,

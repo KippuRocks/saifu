@@ -5,7 +5,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Result, Ticketto } from "@ticketto/sdk";
 import Constants from "expo-constants";
-import * as SecureStore from "expo-secure-store";
 import { type HandoffOutcome, linkCheckoutHandoff } from "../handoff/checkout.ts";
 import { type InvitationOutcome, redeemInvitation } from "../handoff/invitation.ts";
 import { type HolderCredential, holderCredential } from "../holder/credential.ts";
@@ -16,6 +15,7 @@ import { type LoadedHoldings, loadHoldings } from "../holdings/load.ts";
 import { type KippuClient, kippuClient } from "../kippu/client.ts";
 import { linkHolder } from "../kippu/link.ts";
 import { connectLedger } from "../ledger/ticketto.ts";
+import { secureStorage } from "../platform/secure-storage";
 import { exchangedAccounts } from "../transfer/exchanged.ts";
 import { checkReceiver, type ReceiverCheck } from "../transfer/receiver.ts";
 import {
@@ -97,7 +97,7 @@ export interface HolderServices {
 }
 
 export function holderServices(config: BuildConfig = buildConfig()): HolderServices {
-  const store = secureHolderStore(SecureStore);
+  const store = secureHolderStore(secureStorage);
   const credential = () => holderCredential({ rpId: config.rpId, store });
   const ledger = () =>
     connectLedger({

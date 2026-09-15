@@ -2,7 +2,7 @@ import type { AccountId } from "@ticketto/sdk";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput } from "react-native";
 import { TRANSFER_COPY } from "../copy/transfer.ts";
-import { AccountScanner } from "../receive/AccountScanner.tsx";
+import { AccountScanner } from "../receive/AccountScanner";
 import type { ReceiverCheck } from "../transfer/receiver.ts";
 import type { Router } from "./router.ts";
 import { Screen } from "./Screen.tsx";
