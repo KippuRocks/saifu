@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
-import { DEVICES_COPY } from "../copy/devices.ts";
+import { DEVICES_COPY } from "../copy/devices";
 import type { DeviceRow } from "../devices/list.ts";
 import { formatDate } from "../holdings/detail.ts";
 import { Disclosure } from "./Disclosure.tsx";

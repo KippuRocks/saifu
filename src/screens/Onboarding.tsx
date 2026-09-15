@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { DEVICES_COPY } from "../copy/devices.ts";
+import { DEVICES_COPY } from "../copy/devices";
 import { ONBOARDING_COPY } from "../copy/onboarding";
 import { Disclosure } from "./Disclosure.tsx";
 import type { Router } from "./router.ts";

@@ -1,7 +1,7 @@
 import type { Registration } from "@ticketto/sdk";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
-import { DEVICES_COPY } from "../copy/devices.ts";
+import { DEVICES_COPY } from "../copy/devices";
 import { addDeviceCode } from "../devices/codes.ts";
 import { QrCode } from "../receive/QrCode.tsx";
 import { QrScanner } from "../receive/QrScanner";
