@@ -23,6 +23,7 @@ async function eventWith(provenance: "Purchased" | "Granted") {
   const { event } = await organiserApi.events.create.mutate({
     zones: [{ id: zone, kind: "Seated" }],
     capacity: 50,
+    saleAsset: "COPM/2",
   });
   await organiserApi.events.zones.addSeatPositions.mutate({ event, zone, positions: ["B-7"] });
   const ticketClass = await organiserApi.events.classes.define.mutate({
@@ -33,6 +34,7 @@ async function eventWith(provenance: "Purchased" | "Granted") {
     policy: { kind: "Single" },
     restrictions: { cannotResale: false, cannotTransfer: false },
     quota: 10,
+    price: provenance === "Purchased" ? 5_000_000 : null,
   });
   return { organiserApi, event, zone, ticketClass };
 }
@@ -129,11 +131,37 @@ describe.skipIf(!stackAvailable)("T-030-10 against kippu-api and the ledger serv
     // The same link again, and a link no invitation has.
     expect(await redeemInvitation(kippu, link.token)).toMatchObject({
       ok: false,
-      failure: "redeemed",
+      failure: "already-redeemed",
     });
     expect(await redeemInvitation(kippu, "A".repeat(43))).toMatchObject({
       ok: false,
-      failure: "unknown",
+      failure: "unknown-invitation",
     });
+  });
+
+  it("a second invitation to a seat already issued is refused as seat-taken, and stays open", async () => {
+    const { organiserApi, event, zone, ticketClass } = await eventWith("Granted");
+    const invite = () =>
+      organiserApi.events.invitations.create.mutate({
+        event,
+        class: ticketClass.id,
+        zone,
+        placement: { kind: "Seated", position: "B-7" },
+        guest: null,
+      });
+    const [first, second] = [await invite(), await invite()];
+    const guest = await linkedHolder();
+    expect((await redeemInvitation(guest.kippu, first.token)).ok).toBe(true);
+    const other = await linkedHolder();
+    expect(await redeemInvitation(other.kippu, second.token)).toEqual({
+      ok: false,
+      failure: "seat-taken",
+      errorCode: "ERR-TicketIdExists",
+    });
+    const listed = await organiserApi.events.invitations.list.query({
+      event,
+      class: ticketClass.id,
+    });
+    expect(listed.find((i) => i.id === second.invitation.id)?.status).toBe("open");
   });
 });

@@ -861,7 +861,7 @@ packages:
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
   '@kippu/api@file:vendor/kippu-api/kippu-api-0.0.0.tgz':
-    resolution: {integrity: sha512-uqF+WMHQ1o5S7A9P6j66A2cI3kDxk2PuOBDwp0Itb+xoYRSfA5NdylGkY5YosjdTrndqKkwak8edvZ0JQoUfyg==, tarball: file:vendor/kippu-api/kippu-api-0.0.0.tgz}
+    resolution: {integrity: sha512-aSYllEwR3q4pQUN0JwL3xnEF2kn6HXqpL4RvZirOpQE6tahNGR946fowBDFv3cxvHdzzPPZDGqOlNTsYKbrucg==, tarball: file:vendor/kippu-api/kippu-api-0.0.0.tgz}
     version: 0.0.0
     engines: {node: '>=24'}
     peerDependencies:

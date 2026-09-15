@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { matches } from "../../tools/copy-lint/vocabulary.ts";
-import { CHECKOUT_COPY, INVITATION_COPY, PENDING_LINK_COPY, SESSION_ENDED } from "../copy/links.ts";
+import {
+  CHECKOUT_COPY,
+  INVITATION_COPY,
+  INVITATION_REFUSAL_COPY,
+  PENDING_LINK_COPY,
+  SESSION_ENDED,
+} from "../copy/links.ts";
 import { type CheckoutHandoffApi, type HandoffLink, linkCheckoutHandoff } from "./checkout.ts";
-import { type InvitationApi, redeemInvitation } from "./invitation.ts";
+import { type InvitationApi, invitationStaysOpen, redeemInvitation } from "./invitation.ts";
 
-const refusal = (code: string, errorCode: string | null = null) =>
-  Object.assign(new Error(code), { data: { code, errorCode } });
+const refusal = (code: string, errorCode: string | null = null, reason: string | null = null) =>
+  Object.assign(new Error(code), { data: { code, errorCode, reason } });
 
 const EVENT = "22".repeat(32);
 const CLASS = "33".repeat(32);
@@ -152,13 +158,22 @@ describe("T-030-10 invitations", () => {
     expect(outcome.ok && outcome.visible).toBe(false);
   });
 
-  it("names unknown, already redeemed, refused and unreachable", async () => {
+  it("names each refusal kippu-api gives a reason for", async () => {
     const cases: [Error, string, string | null][] = [
-      [refusal("NOT_FOUND"), "unknown", null],
-      [refusal("CONFLICT"), "redeemed", null],
-      [refusal("BAD_REQUEST", "ERR-ClassQuotaExceeded"), "refused", "ERR-ClassQuotaExceeded"],
-      [refusal("UNAUTHORIZED"), "session", null],
-      [new Error("network"), "unavailable", null],
+      [refusal("NOT_FOUND", null, "unknown-invitation"), "unknown-invitation", null],
+      [refusal("CONFLICT", null, "already-redeemed"), "already-redeemed", null],
+      [refusal("CONFLICT", null, "seat-held"), "seat-held", null],
+      [refusal("CONFLICT", "ERR-TicketIdExists", "seat-taken"), "seat-taken", "ERR-TicketIdExists"],
+      [
+        refusal("BAD_REQUEST", "ERR-CapacityExceeded", "sold-out"),
+        "sold-out",
+        "ERR-CapacityExceeded",
+      ],
+      [
+        refusal("BAD_REQUEST", "ERR-ClassQuotaExceeded", "class-sold-out"),
+        "class-sold-out",
+        "ERR-ClassQuotaExceeded",
+      ],
     ];
     for (const [error, failure, errorCode] of cases) {
       expect(await redeemInvitation(invitationApi(error), "t".repeat(43))).toEqual({
@@ -169,10 +184,36 @@ describe("T-030-10 invitations", () => {
     }
   });
 
+  it("falls back on the transport code when there is no reason Saifu knows", async () => {
+    const cases: [Error, string][] = [
+      [refusal("NOT_FOUND"), "unknown-invitation"],
+      [refusal("CONFLICT", null, "some-future-reason"), "refused"],
+      [refusal("BAD_REQUEST", "ERR-EventCancelled"), "refused"],
+      [refusal("UNAUTHORIZED"), "session"],
+      [new Error("network"), "unavailable"],
+    ];
+    for (const [error, failure] of cases) {
+      const outcome = await redeemInvitation(invitationApi(error), "t".repeat(43));
+      expect(!outcome.ok && outcome.failure).toBe(failure);
+    }
+  });
+
+  it("says to try again later exactly where the invitation stays open", () => {
+    for (const [failure, message] of Object.entries(INVITATION_REFUSAL_COPY)) {
+      if (failure === "unavailable" || failure === "refused") continue;
+      const open = invitationStaysOpen(failure as keyof typeof INVITATION_REFUSAL_COPY);
+      expect(/try again later/i.test(message), failure).toBe(open);
+    }
+    expect(invitationStaysOpen("unknown-invitation")).toBe(false);
+    expect(invitationStaysOpen("already-redeemed")).toBe(false);
+    expect(invitationStaysOpen("seat-held")).toBe(true);
+  });
+
   it("REQ-TM-2, REQ-SP-1a: the copy passes the copy lint", () => {
     const text = [
       ...Object.values(CHECKOUT_COPY),
       ...Object.values(INVITATION_COPY),
+      ...Object.values(INVITATION_REFUSAL_COPY),
       ...Object.values(PENDING_LINK_COPY),
       SESSION_ENDED,
     ].join("\n");
