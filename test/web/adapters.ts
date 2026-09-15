@@ -36,10 +36,7 @@ export type Adapters = [
     },
     typeof WebRecoveryCopy
   >,
-  Implements<
-    { readonly ONBOARDING_COPY: { readonly passkeysUnavailable: string } },
-    typeof WebOnboardingCopy
-  >,
+  Implements<typeof NativeOnboardingCopy, typeof WebOnboardingCopy>,
 ];
 
 export type NativeCopy = [typeof NativeRecoveryCopy, typeof NativeOnboardingCopy];

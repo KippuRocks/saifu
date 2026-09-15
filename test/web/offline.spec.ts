@@ -37,7 +37,6 @@ test("T-030-19: NFR-3: after one online visit, Saifu Web opens and produces a pa
   context,
   page,
 }) => {
-  test.setTimeout(120_000);
   const stack = await saifuWeb(context);
   await virtualAuthenticator(page);
   const holding = stack.grantTickets();
@@ -54,8 +53,9 @@ test("T-030-19: NFR-3: after one online visit, Saifu Web opens and produces a pa
   const servedOnline = stack.served();
   await page.reload();
   await expect(page.locator('[data-screen="tickets.list"]')).toBeVisible();
-  // The ledger is retried before the device cache is shown, as natively.
-  await expect(page.getByTestId(`holding-${ticket}`)).toBeVisible({ timeout: 60_000 });
+  // The browser reports it is offline: the device cache is shown at once, while
+  // the ledger is retried in the background.
+  await expect(page.getByTestId(`holding-${ticket}`)).toBeVisible();
   await page.getByTestId(`holding-${ticket}`).click();
   await page.getByTestId("ticket-detail-show-pass").click();
   await expect(page.locator('[data-screen="ticket.pass"]')).toBeVisible();
@@ -80,4 +80,33 @@ test("T-030-19: NFR-3: after one online visit, Saifu Web opens and produces a pa
   expect(
     verifyPass(signed.value, registration.value, { now: Date.now }, { rpId: stack.rpId }).ok,
   ).toBe(true);
+});
+
+test("T-030-19: REQ-CP-6: after site storage is cleared, signing in with the same synced passkey restores the account", async ({
+  context,
+  page,
+}) => {
+  const stack = await saifuWeb(context);
+  const authenticator = await virtualAuthenticator(page);
+  const holding = stack.grantTickets();
+
+  await page.goto(`${stack.origin}/`);
+  await page.getByTestId("onboarding-set-up").click();
+  await expect(page.locator('[data-testid^="holding-"]')).toBeVisible();
+  const { account, ticket } = await holding();
+
+  // Clear everything the browser keeps for Saifu's origin; the passkey stays with
+  // the authenticator, as a synced passkey stays with its password manager.
+  const cdp = await context.newCDPSession(page);
+  await cdp.send("Storage.clearDataForOrigin", { origin: stack.origin, storageTypes: "all" });
+  await page.goto(`${stack.origin}/`);
+  await expect(page.locator('[data-screen="holder.onboarding"]')).toBeVisible();
+  await expect(page.getByTestId("recovery-disclosure")).toContainText("syncs your passkey");
+
+  await page.getByTestId("onboarding-restore").click();
+  await expect(page.getByTestId(`holding-${ticket}`)).toBeVisible();
+
+  // The same account, linked again, with no new passkey and no new registration.
+  expect(await authenticator.credentials()).toHaveLength(1);
+  expect(stack.kippu.linkedAccounts()).toEqual([account, account]);
 });
