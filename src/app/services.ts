@@ -3,12 +3,15 @@
 // and Kippu clients over them.
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { Result, Ticketto } from "@ticketto/sdk";
+import type { AccountId, Registration, Result, Ticketto } from "@ticketto/sdk";
 import Constants from "expo-constants";
+import { type AddDeviceFlow, type AddDeviceStep, addDeviceFlow } from "../devices/add.ts";
+import { registrationFromDeviceCode, shortCode } from "../devices/codes.ts";
+import { type DeviceRow, listDevices } from "../devices/list.ts";
 import { type HandoffOutcome, linkCheckoutHandoff } from "../handoff/checkout.ts";
 import { type InvitationOutcome, redeemInvitation } from "../handoff/invitation.ts";
-import { type HolderCredential, holderCredential } from "../holder/credential.ts";
-import { registerHolderCredential } from "../holder/register.ts";
+import { fromHex, type HolderCredential, holderCredential } from "../holder/credential.ts";
+import { registerHolderCredential, waitForJoinedRegistration } from "../holder/register.ts";
 import { type HolderStore, secureHolderStore } from "../holder/store.ts";
 import { type HoldingsCache, holdingsCache } from "../holdings/cache.ts";
 import { type LoadedHoldings, loadHoldings } from "../holdings/load.ts";
@@ -75,6 +78,25 @@ export interface HolderServices {
   loadHoldings(account: string): Promise<LoadedHoldings>;
   /** Registers the credential on the ledger if needed, then links it to Kippu. */
   provisionAndLink(): Promise<Result<HolderCredential>>;
+  /**
+   * Every credential registered to the holder's account, marking this phone's
+   * (T-030-13, T-025-13); `null` when it cannot be read.
+   */
+  listDevices(): Promise<readonly DeviceRow[] | null>;
+  /** A join under way on this phone (T-030-13): its registration and short code. */
+  joiningDevice(): Promise<{ registration: Uint8Array; shortCode: string } | null>;
+  /** Creates this phone's passkey for an existing account, as its second device. */
+  joinDevice(userId: string): Promise<{ registration: Uint8Array; shortCode: string }>;
+  /** Waits for the account's other device to register this one. */
+  waitForJoin(cancelled: () => boolean): Promise<boolean>;
+  /** Reads a scanned code as a new device's registration for `account`. */
+  parseDeviceRegistration(text: string, account: string): Registration | null;
+  /** Adding a device from this phone: the confirmation, then signing and submitting. */
+  addDevice(
+    account: string,
+    registration: Registration,
+    onStep: (step: AddDeviceStep) => void,
+  ): Promise<AddDeviceFlow | { readonly failed: string }>;
   /** Forgets a Kippu session kippu-api no longer accepts, so setup links again. */
   endSession(): Promise<void>;
   /** Links the holder's account to an Ichiba checkout, and gets the pairing code. */
@@ -139,6 +161,41 @@ export function holderServices(config: BuildConfig = buildConfig()): HolderServi
         await linkHolder(kippuClient({ url: config.kippuApiUrl }), holder, store);
       }
       return { ok: true, value: holder };
+    },
+    async listDevices() {
+      return listDevices(await kippu());
+    },
+    async joiningDevice() {
+      const record = await store.load();
+      if (record?.joining !== true) return null;
+      const registration = fromHex(record.registration);
+      return { registration, shortCode: shortCode(registration) };
+    },
+    async joinDevice(userId) {
+      const holder = await holderCredential({ rpId: config.rpId, store, joinUserId: userId });
+      return { registration: holder.registration, shortCode: shortCode(holder.registration) };
+    },
+    async waitForJoin(cancelled) {
+      const [holder, connected] = await Promise.all([credential(), ledger()]);
+      if (!connected.ok) return false;
+      return waitForJoinedRegistration(connected.value, holder, store, {
+        attempts: 24,
+        intervalMs: 5000,
+        cancelled,
+      });
+    },
+    parseDeviceRegistration(text, account) {
+      return registrationFromDeviceCode(text, account as AccountId);
+    },
+    async addDevice(account, registration, onStep) {
+      const connected = await ledger().catch(() => null);
+      if (connected === null || !connected.ok) return { failed: "ERR-LedgerUnavailable" };
+      const holder = await credential();
+      return addDeviceFlow(account as AccountId, registration, {
+        ledger: connected.value,
+        signer: holder.signer,
+        onStep,
+      });
     },
     async endSession() {
       const record = await store.load();

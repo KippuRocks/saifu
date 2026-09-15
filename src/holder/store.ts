@@ -18,6 +18,11 @@ export interface HolderRecord {
   readonly registration: string;
   /** Whether the ledger has accepted the registration. */
   readonly registered: boolean;
+  /**
+   * This device joined an existing account (T-030-13): its registration is
+   * submitted by the account's other device, so this one only waits for it.
+   */
+  readonly joining?: true;
   /** The Kippu holder session, once linked. */
   readonly kippuSession?: KippuSessionRecord;
 }
@@ -100,6 +105,9 @@ function parseRecord(raw: string): HolderRecord {
     !HEX.test(r.registration) ||
     typeof r.registered !== "boolean"
   ) {
+    throw new HolderRecordError("the stored holder record is malformed");
+  }
+  if (r.joining !== undefined && r.joining !== true) {
     throw new HolderRecordError("the stored holder record is malformed");
   }
   const session = r.kippuSession;

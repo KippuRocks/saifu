@@ -10,6 +10,8 @@ import { type FakeBridge, fakeBridge } from "./fake-bridge.ts";
 export interface SimulatedDevice {
   readonly authenticator: SimulatedWebAuthnAuthenticator;
   readonly bridge: FakeBridge;
+  /** Makes this device the one `navigator.credentials` reaches again. */
+  readonly install: () => void;
 }
 
 export function simulatedDevice(rpId: string): SimulatedDevice {
@@ -19,9 +21,11 @@ export function simulatedDevice(rpId: string): SimulatedDevice {
     credentialId: crypto.getRandomValues(new Uint8Array(32)),
   });
   const bridge = fakeBridge(authenticator);
-  Object.defineProperty(globalThis.navigator, "credentials", {
-    value: createPasskeyCredentials({ bridge, rpId }),
-    configurable: true,
-  });
-  return { authenticator, bridge };
+  const install = () =>
+    Object.defineProperty(globalThis.navigator, "credentials", {
+      value: createPasskeyCredentials({ bridge, rpId }),
+      configurable: true,
+    });
+  install();
+  return { authenticator, bridge, install };
 }

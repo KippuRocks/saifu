@@ -87,6 +87,17 @@ Transfers (`src/transfer/`, T-030-08) are signed with the passkey, sponsored thr
 - **After submission.** Saifu waits for Kippu's copy (`derived.waitFor`) and refreshes the holdings before saying the ticket is gone. The relay is given the copy's cursor from the last holdings read, so a lagging relay waits instead of refusing.
 - **Restricted tickets** (`AC-B3.3`). A ticket that cannot be transferred says why, and offers no transfer.
 
+## A second device
+
+A holder adds Saifu on a second phone of theirs (`src/devices/`, T-030-13). This is V0's only way to keep tickets after losing a phone (`REQ-CP-6`, `DEF-7`). The two phones exchange QR codes in person, and nothing passes through Kippu:
+
+1. On the existing phone, Settings → **Add a device** shows `saifu:add-device:<user id>`. The new phone ("I already use Saifu on another phone", at onboarding) scans it and creates a passkey for the same account.
+2. The new phone shows `saifu:device-registration:<registration, base64url>` and a six-digit short code: the first four bytes of `BLAKE2b-256("saifu/v0/device-short-code" ‖ registration)`, big-endian, modulo one million.
+3. The existing phone scans it. Before the passkey prompt, it shows a full-screen confirmation, with the same short code to compare: the new phone gets full control of every ticket, and this cannot be undone.
+4. The existing phone signs `registerCredential`, sponsored. The new phone never registers itself: it waits for `getCredential`, then links to Kippu with its own credential.
+
+Settings lists every device registered to the account (`derived.credentials.mine`, T-025-13) and marks this phone. Saifu cannot remove one, and says so.
+
 ## Screens
 
 Every screen renders inside `<Screen id>` (`src/screens/Screen.tsx`): its

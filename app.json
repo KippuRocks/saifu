@@ -32,7 +32,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Saifu uses the camera to scan the code of the person you send a ticket to.",
+          "cameraPermission": "Saifu uses the camera to scan codes shown by another phone: a receive code, or a code to add a device.",
           "microphonePermission": false,
           "recordAudioAndroid": false
         }

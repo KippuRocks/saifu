@@ -28,6 +28,12 @@ export interface HolderCredentialOptions {
   /** The deployment's holder RP id: the profile's parameter (features/003-profile-v0/plan.md §5.3). */
   readonly rpId: string;
   readonly store: HolderStore;
+  /**
+   * The user id of an account that already exists, when this device joins it as
+   * a second device (T-030-13). Its passkey is then registered by the account's
+   * existing device, never by this one.
+   */
+  readonly joinUserId?: string;
   /** Cryptographically secure random bytes. Defaults to `crypto.getRandomValues`. */
   readonly randomBytes?: (length: number) => Uint8Array;
 }
@@ -80,7 +86,10 @@ export async function holderCredential(
   const existing = await store.load();
   if (existing !== null) return credentialFrom(existing, options);
 
-  const userId = toHex((options.randomBytes ?? defaultRandomBytes)(32));
+  if (options.joinUserId !== undefined && !/^[0-9a-f]{64}$/.test(options.joinUserId)) {
+    throw new TypeError("a user id is 32 bytes of lower-case hex");
+  }
+  const userId = options.joinUserId ?? toHex((options.randomBytes ?? defaultRandomBytes)(32));
   const ceremonies = v0Challenger();
   let rawId: Uint8Array | undefined;
   const webAuthn = await authenticator(userId, options.rpId, ceremonies.challenger, {
@@ -111,6 +120,7 @@ export async function holderCredential(
     credentialIds: [toBase64Url(rawId)],
     registration: toHex(registration),
     registered: false,
+    ...(options.joinUserId === undefined ? {} : { joining: true }),
   };
   await store.save(record);
   return credentialFrom(record, options, { webAuthn, ceremonies });

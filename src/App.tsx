@@ -6,6 +6,7 @@ import { StyleSheet, View } from "react-native";
 import { type HolderPhase, phaseFor } from "./app/holder-state.ts";
 import { holderServices } from "./app/services.ts";
 import { PENDING_LINK_COPY } from "./copy/links.ts";
+import type { AddDeviceFlow, AddDeviceStep } from "./devices/add.ts";
 import { ledgerTicketDetail } from "./holdings/degraded.ts";
 import { ticketDetail } from "./holdings/detail.ts";
 import type { LoadedHoldings } from "./holdings/load.ts";
@@ -14,6 +15,9 @@ import { produceTicketPass } from "./passes/produce.ts";
 import { passWindowFor } from "./passes/window.ts";
 import { passkeysAvailable } from "./passkey/install";
 import { CheckoutLink } from "./screens/CheckoutLink.tsx";
+import { DeviceAdd } from "./screens/DeviceAdd.tsx";
+import { DeviceAddConfirm } from "./screens/DeviceAddConfirm.tsx";
+import { DeviceJoin } from "./screens/DeviceJoin.tsx";
 import { useIncomingLinks } from "./screens/deep-links";
 import { Holdings, type OpenedHolding } from "./screens/Holdings.tsx";
 import { InvitationRedeem } from "./screens/InvitationRedeem.tsx";
@@ -55,8 +59,10 @@ export function App() {
   /** A link into Saifu that waits for the holder to be set up. */
   const [pending, setPending] = useState<SaifuLink | null>(null);
 
+  const [userId, setUserId] = useState<string | null>(null);
   const refresh = useCallback(async () => {
     const record = await services.store.load();
+    setUserId(record?.userId ?? null);
     const account = record === null ? null : holderAccountId(record.userId);
     setPhase(phaseFor(record, account, Date.now()));
   }, [services]);
@@ -96,6 +102,8 @@ export function App() {
       navigate("app.starting", "tickets.list", {});
     } else if (screen === "holder.onboarding" && phase.kind === "ready" && pending === null) {
       navigate("holder.onboarding", "tickets.list", {});
+    } else if (screen === "device.join" && phase.kind === "ready") {
+      navigate("device.join", "tickets.list", {});
     }
   }, [screen, phase.kind, pending, navigate]);
 
@@ -105,6 +113,11 @@ export function App() {
   }, [services]);
 
   const setUp = useCallback(async () => {
+    // A phone joining another's account is set up by that phone, not by itself.
+    if ((await services.joiningDevice().catch(() => null)) !== null) {
+      navigate("holder.onboarding", "device.join", {});
+      return;
+    }
     setPhase({ kind: "provisioning" });
     try {
       const done = await services.provisionAndLink();
@@ -113,7 +126,27 @@ export function App() {
     } catch {
       setPhase({ kind: "onboarding", failed: true });
     }
-  }, [services, refresh]);
+  }, [services, refresh, navigate]);
+
+  // Adding a device from this phone (T-030-13).
+  const [adding, setAdding] = useState<{
+    readonly flow: AddDeviceFlow | null;
+    readonly step: AddDeviceStep | null;
+  }>({ flow: null, step: null });
+
+  const joinDevice = useCallback((id: string) => services.joinDevice(id), [services]);
+  const resumeJoin = useCallback(() => services.joiningDevice(), [services]);
+  const waitForJoin = useCallback(
+    (cancelled: () => boolean) => services.waitForJoin(cancelled),
+    [services],
+  );
+  const loadDevices = useCallback(() => services.listDevices(), [services]);
+
+  const joined = useCallback(async () => {
+    const done = await services.provisionAndLink().catch(() => null);
+    if (done?.ok) await refresh();
+    else navigate("device.join", "holder.onboarding", {});
+  }, [services, refresh, navigate]);
 
   const account = phase.kind === "ready" ? phase.account : null;
   const assurance = loaded !== null && loaded.source !== "none" ? loaded.entry.assurance : null;
@@ -217,6 +250,7 @@ export function App() {
           failed={phase.kind === "onboarding" && phase.failed}
           passkeysAvailable={passkeysAvailable}
           onSetUp={setUp}
+          router={router}
           pendingNotice={pending === null ? null : PENDING_LINK_COPY[pending.kind]}
         />
       ) : screen === "checkout.link" && router.location.params.handoffToken !== undefined ? (
@@ -305,7 +339,50 @@ export function App() {
       ) : screen === "tickets.receive" && account !== null ? (
         <Receive account={account} router={router} />
       ) : screen === "settings.main" && account !== null ? (
-        <Settings account={account} router={router} />
+        <Settings account={account} loadDevices={loadDevices} router={router} />
+      ) : screen === "device.add" && account !== null && userId !== null ? (
+        <DeviceAdd
+          onRegistration={(registration) => {
+            setAdding({ flow: null, step: null });
+            navigate("device.add", "device.add.confirm", {});
+            services
+              .addDevice(account, registration, (step) =>
+                setAdding((current) => ({ ...current, step })),
+              )
+              .then((flow) => {
+                if ("failed" in flow) {
+                  setAdding({ flow: null, step: { kind: "failed", code: flow.failed } });
+                  return;
+                }
+                setAdding((current) => ({ ...current, flow }));
+                return flow.begin();
+              })
+              .catch(() =>
+                setAdding({ flow: null, step: { kind: "failed", code: "ERR-LedgerUnavailable" } }),
+              );
+          }}
+          parse={(text) => services.parseDeviceRegistration(text, account)}
+          router={router}
+          userId={userId}
+        />
+      ) : screen === "device.add.confirm" ? (
+        <DeviceAddConfirm
+          onClose={() => navigate("device.add.confirm", "settings.main", {})}
+          onConfirm={() => {
+            adding.flow?.confirm().catch(() => {});
+          }}
+          step={adding.step}
+        />
+      ) : screen === "device.join" ? (
+        <DeviceJoin
+          join={joinDevice}
+          onJoined={() => {
+            joined().catch(() => {});
+          }}
+          resume={resumeJoin}
+          router={router}
+          waitForRegistration={waitForJoin}
+        />
       ) : (
         <Starting />
       )}
