@@ -80,6 +80,26 @@ describe("T-030-15 screen manifest", () => {
     ).toContain("navigate with the router, not @react-navigation/native");
   });
 
+  it("records entries from links, and refuses one into a screen no link opens", () => {
+    const ok = '<><Screen id="a.one" /><Screen id="a.two" /></>';
+    expect(messages(`router.enter("a.two", { id }); export const X = () => ${ok};`)).toEqual([]);
+    expect(messages(`enter("a.one", {}); export const X = () => ${ok};`)).toContain(
+      'enter("a.one") names a screen no link opens: give it a route',
+    );
+    expect(messages(`const s = "a.two"; enter(s, {}); export const X = () => ${ok};`)).toContain(
+      "enter must name its screen as a string literal",
+    );
+    expect(
+      messages(`import * as Linking from "expo-linking"; export const X = () => ${ok};`),
+    ).toContain("navigate with the router, not expo-linking");
+    expect(
+      messages(
+        'import * as Linking from "expo-linking"; export const x = 1;',
+        "src/screens/deep-links.ts",
+      ),
+    ).not.toContain("navigate with the router, not expo-linking");
+  });
+
   it("screens.json is what Saifu's sources generate", async () => {
     const root = join(import.meta.dirname, "..", "..");
     const { manifest, problems } = buildManifest(extract(root));

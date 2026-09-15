@@ -17,6 +17,8 @@
       "route": null,
       "title": "Set up Saifu",
       "navigatesTo": [
+        "checkout.link",
+        "invitation.redeem",
         "tickets.list"
       ]
     },
@@ -42,6 +44,25 @@
       "route": null,
       "title": "Settings",
       "navigatesTo": [
+        "tickets.list"
+      ]
+    },
+    {
+      "screenId": "checkout.link",
+      "route": "/checkout#:handoffToken",
+      "title": "Pair with your checkout",
+      "navigatesTo": [
+        "holder.onboarding",
+        "tickets.list"
+      ]
+    },
+    {
+      "screenId": "invitation.redeem",
+      "route": "/invitations#:token",
+      "title": "Your invitation",
+      "navigatesTo": [
+        "holder.onboarding",
+        "ticket.detail",
         "tickets.list"
       ]
     }

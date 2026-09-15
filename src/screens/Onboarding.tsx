@@ -7,17 +7,30 @@ export interface OnboardingProps {
   readonly failed: boolean;
   readonly passkeysAvailable: boolean;
   readonly onSetUp: () => void;
+  /** Why setup is needed now: a link into Saifu is waiting for it. */
+  readonly pendingNotice?: string | null;
 }
 
 /**
  * First run (T-030-04): the recovery disclosure comes before the holder creates
  * a passkey, so nobody provisions a credential without having read it.
  */
-export function Onboarding({ busy, failed, passkeysAvailable, onSetUp }: OnboardingProps) {
+export function Onboarding({
+  busy,
+  failed,
+  passkeysAvailable,
+  onSetUp,
+  pendingNotice = null,
+}: OnboardingProps) {
   return (
     <Screen id="holder.onboarding" busy={busy}>
       <ScrollView contentContainerStyle={styles.page}>
         <Text style={styles.brand}>Saifu</Text>
+        {pendingNotice === null ? null : (
+          <Text style={styles.pending} testID="holder.onboarding.pending-link">
+            {pendingNotice}
+          </Text>
+        )}
         <Disclosure />
         {passkeysAvailable ? null : (
           <Text style={styles.notice}>
@@ -50,6 +63,7 @@ export function Onboarding({ busy, failed, passkeysAvailable, onSetUp }: Onboard
 const styles = StyleSheet.create({
   page: { padding: 24, gap: 24 },
   brand: { fontSize: 32, fontWeight: "600" },
+  pending: { fontSize: 16, fontWeight: "600" },
   notice: { fontSize: 15, color: "#8a1c1c" },
   actions: { gap: 12 },
   button: { backgroundColor: "#111", borderRadius: 12, paddingVertical: 14, alignItems: "center" },

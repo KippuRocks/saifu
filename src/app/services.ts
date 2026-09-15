@@ -6,6 +6,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Result, Ticketto } from "@ticketto/sdk";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
+import { type HandoffOutcome, linkCheckoutHandoff } from "../handoff/checkout.ts";
+import { type InvitationOutcome, redeemInvitation } from "../handoff/invitation.ts";
 import { type HolderCredential, holderCredential } from "../holder/credential.ts";
 import { registerHolderCredential } from "../holder/register.ts";
 import { type HolderStore, secureHolderStore } from "../holder/store.ts";
@@ -17,6 +19,8 @@ import { connectLedger } from "../ledger/ticketto.ts";
 
 export interface BuildConfig {
   readonly rpId: string;
+  /** The https origin of links into Saifu (src/links/links.ts). */
+  readonly linkBase: string;
   readonly ledgerUrl: string;
   readonly sponsorUrl: string;
   readonly kippuApiUrl: string;
@@ -27,12 +31,15 @@ export function buildConfig(): BuildConfig {
     | {
         passkey?: { rpId?: string };
         endpoints?: { ledgerUrl?: string; sponsorUrl?: string; kippuApiUrl?: string };
+        links?: { linkBase?: string };
       }
     | undefined;
   const rpId = extra?.passkey?.rpId;
   const endpoints = extra?.endpoints;
+  const linkBase = extra?.links?.linkBase;
   if (
     rpId === undefined ||
+    linkBase === undefined ||
     endpoints?.ledgerUrl === undefined ||
     endpoints.sponsorUrl === undefined ||
     endpoints.kippuApiUrl === undefined
@@ -41,6 +48,7 @@ export function buildConfig(): BuildConfig {
   }
   return {
     rpId,
+    linkBase,
     ledgerUrl: endpoints.ledgerUrl,
     sponsorUrl: endpoints.sponsorUrl,
     kippuApiUrl: endpoints.kippuApiUrl,
@@ -59,6 +67,12 @@ export interface HolderServices {
   loadHoldings(account: string): Promise<LoadedHoldings>;
   /** Registers the credential on the ledger if needed, then links it to Kippu. */
   provisionAndLink(): Promise<Result<HolderCredential>>;
+  /** Forgets a Kippu session kippu-api no longer accepts, so setup links again. */
+  endSession(): Promise<void>;
+  /** Links the holder's account to an Ichiba checkout, and gets the pairing code. */
+  linkCheckout(handoffToken: string): Promise<HandoffOutcome>;
+  /** Redeems an invitation for the holder, and waits for Kippu's copy to show the ticket. */
+  redeemInvitation(token: string): Promise<InvitationOutcome>;
 }
 
 export function holderServices(config: BuildConfig = buildConfig()): HolderServices {
@@ -104,6 +118,18 @@ export function holderServices(config: BuildConfig = buildConfig()): HolderServi
         await linkHolder(kippuClient({ url: config.kippuApiUrl }), holder, store);
       }
       return { ok: true, value: holder };
+    },
+    async endSession() {
+      const record = await store.load();
+      if (record === null) return;
+      const { kippuSession: _, ...rest } = record;
+      await store.save(rest);
+    },
+    async linkCheckout(handoffToken) {
+      return linkCheckoutHandoff(await kippu(), handoffToken);
+    },
+    async redeemInvitation(token) {
+      return redeemInvitation(await kippu(), token);
     },
   };
 }

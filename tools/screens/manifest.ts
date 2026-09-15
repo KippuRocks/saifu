@@ -44,6 +44,18 @@ export function buildManifest(
     }
   }
 
+  for (const { to, file, line } of extracted.entries) {
+    if (!(to in screens)) {
+      problems.push({ file, line, message: `unknown entry screen "${to}"` });
+    } else if (screens[to]?.route === null) {
+      problems.push({
+        file,
+        line,
+        message: `enter("${to}") names a screen no link opens: give it a route`,
+      });
+    }
+  }
+
   const renderedIds = new Set<string>();
   for (const { screenId, file, line } of extracted.rendered) {
     if (!(screenId in screens)) {

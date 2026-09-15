@@ -43,3 +43,15 @@ name: Development build smoke test
 # platform as passkey-capable.
 - assertVisible:
     id: "passkey-bridge-linked"
+# T-030-10: an invitation link opened before Saifu is set up waits for setup, and
+# says so on the onboarding screen.
+- openLink: "saifu://invitations#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "holder.onboarding.pending-link"
+    timeout: 30000
+- assertVisible:
+    id: "holder.onboarding.settled"
