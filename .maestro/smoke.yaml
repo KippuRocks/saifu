@@ -14,6 +14,11 @@ name: Development build smoke test
         id: "saifu-root"
     times: 60
     commands:
+      # An emulator's own apps sometimes stop responding while it settles, and
+      # their "isn't responding" dialog covers Saifu; let them wait.
+      - tapOn:
+          text: "Wait"
+          optional: true
       - tapOn:
           text: "Open"
           optional: true
