@@ -38,6 +38,27 @@ Development build, on a machine with Xcode or the Android SDK (JDK 17):
     pnpm ios           # build, install on a simulator, start Metro
     pnpm android       # build, install on an emulator, start Metro
 
+## Links into Saifu
+
+Two kinds of link open Saifu (`src/links/links.ts`, T-030-10). Both are https links
+under the **link base**, `SAIFU_LINK_BASE` — an https origin with no path, whose
+placeholder is `https://saifu.kippu.example` until a host is chosen:
+
+| Link | Built by | Opens |
+|---|---|---|
+| `<link base>/checkout#<handoff token>` | Ichiba, for a checkout's Saifu handoff (universal link on mobile, QR code on desktop) | `checkout.link` |
+| `<link base>/invitations#<token>` | Ibento, for a guest invitation | `invitation.redeem` |
+
+- Tokens are kippu-api's: 43 base64url characters.
+- The token is in the **fragment**, never the path or query. A browser does not send a fragment to the server, so opening a link on a phone without Saifu does not put a token in the link host's request logs.
+- The link host vouches for the app: `applinks` in its `apple-app-site-association` and `handle_all_urls` in its `assetlinks.json` (`pnpm well-known`, which also takes `SAIFU_LINK_BASE`). The app declares the host as an associated domain on iOS, and as verified App Links for `/checkout` and `/invitations` on Android.
+- Development builds also accept `saifu://checkout#<token>` and `saifu://invitations#<token>`.
+
+What Saifu does with them:
+- **Checkout handoff.** Saifu links the holder's account with `sales.checkout.link` and shows the 6-digit pairing code, with what is being bought. The buyer compares it with the checkout page and confirms there; Saifu confirms nothing.
+- **Invitation.** Saifu redeems the token with `events.invitations.redeem`, waits for Kippu's copy (`derived.waitFor`), and opens the ticket. Unknown, used and refused invitations each get a plain explanation.
+- A link that arrives before Saifu is set up, or after the Kippu session ended, waits for setup and continues right after.
+
 ## Screens
 
 Every screen renders inside `<Screen id>` (`src/screens/Screen.tsx`): its
@@ -45,7 +66,9 @@ Every screen renders inside `<Screen id>` (`src/screens/Screen.tsx`): its
 nothing is loading or waiting on a passkey ceremony, so a test or a screenshot
 can wait for the settled screen. The ids, titles and deep-link routes are the
 router's table, `src/screens/registry.ts`; every move between screens is a
-`navigate("from", "to", params)` call naming both literally.
+`navigate("from", "to", params)` call naming both literally, and a link into
+Saifu enters its screen with `enter("to", params)`: only a screen with a route —
+the link's path — can be entered. Only `src/screens/deep-links.ts` reads URLs.
 
 `screens.json` is the screen manifest for kippu-e2e's navigation map (`F-070`
 §5.4), in the `kippu.screens/1` format Ibento uses. It is generated and

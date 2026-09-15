@@ -1,4 +1,5 @@
-// Expo app configuration, layered over app.json: the passkey relying party.
+// Expo app configuration, layered over app.json: the passkey relying party, the
+// service endpoints, and the host of the links that open Saifu.
 //
 // The WebAuthn RP id is a deployment parameter of the V0 profile
 // (features/003-profile-v0/plan.md §5.3): every holder passkey is bound to it,
@@ -77,21 +78,72 @@ export function endpointsConfig(env: Record<string, string | undefined>): Endpoi
   };
 }
 
+/** Placeholder for the host of links into Saifu, not chosen yet. */
+export const PLACEHOLDER_LINK_BASE = "https://saifu.kippu.example";
+
+/** The URL paths on the link host that open Saifu (src/links/links.ts). */
+export const LINK_PATHS = ["/checkout", "/invitations"] as const;
+
+export interface LinksConfig {
+  /** The https origin links into Saifu use (src/links/links.ts). */
+  readonly linkBase: string;
+  readonly host: string;
+  readonly placeholder: boolean;
+}
+
+export function linksConfig(env: Record<string, string | undefined>): LinksConfig {
+  const value = env.SAIFU_LINK_BASE?.trim() || PLACEHOLDER_LINK_BASE;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`SAIFU_LINK_BASE must be an https origin: ${value}`);
+  }
+  if (
+    url.protocol !== "https:" ||
+    !HOSTNAME.test(url.hostname) ||
+    url.port !== "" ||
+    (url.pathname !== "/" && url.pathname !== "") ||
+    url.search !== "" ||
+    url.hash !== ""
+  ) {
+    throw new Error(`SAIFU_LINK_BASE must be an https origin, with no port or path: ${value}`);
+  }
+  return {
+    linkBase: url.origin,
+    host: url.hostname,
+    placeholder: url.origin === PLACEHOLDER_LINK_BASE,
+  };
+}
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const passkey = passkeyConfig(process.env);
   const endpoints = endpointsConfig(process.env);
+  const links = linksConfig(process.env);
   return {
     ...config,
     name: config.name ?? "Saifu",
     slug: config.slug ?? "saifu",
     ios: {
       ...config.ios,
-      associatedDomains: [`webcredentials:${passkey.rpId}`],
+      associatedDomains: [`webcredentials:${passkey.rpId}`, `applinks:${links.host}`],
+    },
+    android: {
+      ...config.android,
+      intentFilters: [
+        {
+          action: "VIEW",
+          autoVerify: true,
+          data: LINK_PATHS.map((pathPrefix) => ({ scheme: "https", host: links.host, pathPrefix })),
+          category: ["BROWSABLE", "DEFAULT"],
+        },
+      ],
     },
     extra: {
       ...config.extra,
       passkey,
       endpoints,
+      links,
     },
   };
 };

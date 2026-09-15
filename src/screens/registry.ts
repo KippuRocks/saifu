@@ -3,9 +3,10 @@
  *
  * Every screen has a stable `screenId`, a title, the parameters the router shows
  * it with, and its route: the deep-link path that opens it, as a pattern with
- * `:name` parameters, or `null` when no link opens it. No screen has a deep link
- * yet: the links into Saifu — the checkout handoff from Ichiba and invitation
- * links — arrive with T-030-10, which adds their entry screens and routes here.
+ * `:name` parameters, or `null` when no link opens it. The links into Saifu
+ * (src/links/links.ts) open `checkout.link` — Ichiba's checkout handoff — and
+ * `invitation.redeem`; their routes are those links' paths under the link base,
+ * with the token in the fragment.
  *
  * Screen ids name what a screen is for, as `area.subject`. They never name copy,
  * positions or indices, and once used an id is not renamed: journeys,
@@ -29,6 +30,16 @@ export const SCREENS = {
   "tickets.list": { title: "Your tickets", route: null, params: [] },
   "ticket.detail": { title: "Ticket", route: null, params: ["ticket"] },
   "settings.main": { title: "Settings", route: null, params: [] },
+  "checkout.link": {
+    title: "Pair with your checkout",
+    route: "/checkout#:handoffToken",
+    params: ["handoffToken"],
+  },
+  "invitation.redeem": {
+    title: "Your invitation",
+    route: "/invitations#:token",
+    params: ["token"],
+  },
 } as const satisfies Readonly<Record<string, ScreenDefinition>>;
 
 export type ScreenId = keyof typeof SCREENS;

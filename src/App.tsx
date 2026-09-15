@@ -4,11 +4,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { type HolderPhase, phaseFor } from "./app/holder-state.ts";
 import { holderServices } from "./app/services.ts";
+import { PENDING_LINK_COPY } from "./copy/links.ts";
 import { ledgerTicketDetail } from "./holdings/degraded.ts";
 import { ticketDetail } from "./holdings/detail.ts";
 import type { LoadedHoldings } from "./holdings/load.ts";
+import type { SaifuLink } from "./links/links.ts";
 import { passkeysAvailable } from "./passkey/install.ts";
+import { CheckoutLink } from "./screens/CheckoutLink.tsx";
+import { useIncomingLinks } from "./screens/deep-links.ts";
 import { Holdings, type OpenedHolding } from "./screens/Holdings.tsx";
+import { InvitationRedeem } from "./screens/InvitationRedeem.tsx";
 import { Onboarding } from "./screens/Onboarding.tsx";
 import { useRouter } from "./screens/router.ts";
 import { Settings } from "./screens/Settings.tsx";
@@ -35,8 +40,11 @@ export function App() {
   const [phase, setPhase] = useState<HolderPhase>({ kind: "loading" });
   const [loaded, setLoaded] = useState<LoadedHoldings | null>(null);
   const router = useRouter();
-  const { navigate } = router;
+  const { navigate, enter } = router;
   const screen = router.location.screen;
+  const incoming = useIncomingLinks({ linkBase: services.config.linkBase, scheme: "saifu" });
+  /** A link into Saifu that waits for the holder to be set up. */
+  const [pending, setPending] = useState<SaifuLink | null>(null);
 
   const refresh = useCallback(async () => {
     const record = await services.store.load();
@@ -48,16 +56,44 @@ export function App() {
     refresh().catch(() => setPhase({ kind: "onboarding", failed: true }));
   }, [refresh]);
 
+  // A link into Saifu enters its screen once the holder is set up and linked;
+  // until then it waits, and setup continues to it.
+  useEffect(() => {
+    if (incoming !== null) setPending(incoming.link);
+  }, [incoming]);
+
+  useEffect(() => {
+    if (pending === null || phase.kind === "loading") return;
+    if (phase.kind !== "ready") return;
+    if (screen === "holder.onboarding") {
+      if (pending.kind === "checkout") {
+        navigate("holder.onboarding", "checkout.link", { handoffToken: pending.handoffToken });
+      } else {
+        navigate("holder.onboarding", "invitation.redeem", { token: pending.token });
+      }
+    } else if (pending.kind === "checkout") {
+      enter("checkout.link", { handoffToken: pending.handoffToken });
+    } else {
+      enter("invitation.redeem", { token: pending.token });
+    }
+    setPending(null);
+  }, [pending, phase.kind, screen, navigate, enter]);
+
   // The holder's state decides where the app starts, and where setup leads.
   useEffect(() => {
     if (screen === "app.starting" && phase.kind === "onboarding") {
       navigate("app.starting", "holder.onboarding", {});
-    } else if (screen === "app.starting" && phase.kind === "ready") {
+    } else if (screen === "app.starting" && phase.kind === "ready" && pending === null) {
       navigate("app.starting", "tickets.list", {});
-    } else if (screen === "holder.onboarding" && phase.kind === "ready") {
+    } else if (screen === "holder.onboarding" && phase.kind === "ready" && pending === null) {
       navigate("holder.onboarding", "tickets.list", {});
     }
-  }, [screen, phase.kind, navigate]);
+  }, [screen, phase.kind, pending, navigate]);
+
+  const sessionEnded = useCallback(() => {
+    setPhase({ kind: "onboarding", failed: false });
+    services.endSession().catch(() => {});
+  }, [services]);
 
   const setUp = useCallback(async () => {
     setPhase({ kind: "provisioning" });
@@ -76,6 +112,8 @@ export function App() {
     if (account === null) return;
     setLoaded(await services.loadHoldings(account));
   }, [services, account]);
+  const linkCheckout = useCallback((token: string) => services.linkCheckout(token), [services]);
+  const redeem = useCallback((token: string) => services.redeemInvitation(token), [services]);
 
   useEffect(() => {
     reload().catch(() => setLoaded({ source: "none", error: null }));
@@ -104,6 +142,33 @@ export function App() {
           failed={phase.kind === "onboarding" && phase.failed}
           passkeysAvailable={passkeysAvailable}
           onSetUp={setUp}
+          pendingNotice={pending === null ? null : PENDING_LINK_COPY[pending.kind]}
+        />
+      ) : screen === "checkout.link" && router.location.params.handoffToken !== undefined ? (
+        <CheckoutLink
+          handoffToken={router.location.params.handoffToken}
+          link={linkCheckout}
+          onSessionEnded={() => {
+            setPending({
+              kind: "checkout",
+              handoffToken: router.location.params.handoffToken as string,
+            });
+            sessionEnded();
+            navigate("checkout.link", "holder.onboarding", {});
+          }}
+          router={router}
+        />
+      ) : screen === "invitation.redeem" && router.location.params.token !== undefined ? (
+        <InvitationRedeem
+          onSessionEnded={() => {
+            setPending({ kind: "invitation", token: router.location.params.token as string });
+            sessionEnded();
+            navigate("invitation.redeem", "holder.onboarding", {});
+          }}
+          redeem={redeem}
+          reloadHoldings={reload}
+          router={router}
+          token={router.location.params.token}
         />
       ) : screen === "tickets.list" ? (
         <Holdings
