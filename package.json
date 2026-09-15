@@ -29,6 +29,7 @@
   "dependencies": {
     "@kippu/sponsorship": "file:vendor/kippu-api/kippu-sponsorship-0.0.0.tgz",
     "@noble/hashes": "2.4.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@ticketto/binding-offchain": "file:vendor/libticketto/ticketto-binding-offchain-0.0.0.tgz",
     "@ticketto/profile-v0": "file:vendor/libticketto/ticketto-profile-v0-0.0.0.tgz",
     "@ticketto/sdk": "file:vendor/libticketto/ticketto-sdk-0.0.0.tgz",
