@@ -2,7 +2,10 @@ import type { HoldingsRead, HoldingView } from "../src/holdings/types.ts";
 
 export const ACCOUNT = "a1".repeat(32);
 
-export function pressPass(overrides: Partial<HoldingView["ticket"]> = {}): HoldingView {
+export function pressPass(
+  overrides: Partial<HoldingView["ticket"]> = {},
+  passWindow: { windowMs: number; isDefault: boolean } = { windowMs: 60_000, isDefault: true },
+): HoldingView {
   return {
     ticket: {
       authoritative: false,
@@ -33,6 +36,7 @@ export function pressPass(overrides: Partial<HoldingView["ticket"]> = {}): Holdi
       zones: [{ id: "44".repeat(32), kind: "Seated" }],
       metadataLocator: null,
       metadata: { name: "Opening night" },
+      passWindow,
     },
   };
 }

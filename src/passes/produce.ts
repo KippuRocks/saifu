@@ -17,10 +17,7 @@ export interface ProducedPass {
 }
 
 export interface PassOptions {
-  /**
-   * The window's length. NFR-5's default of 60 s: the organiser may change it per
-   * event, but nothing Saifu reads carries an event's window yet.
-   */
+  /** The window's length: the event's (`passWindowFor`), else NFR-5's default of 60 s. */
   readonly window?: number;
   readonly now?: () => number;
 }
@@ -49,7 +46,11 @@ export async function produceTicketPass(
  */
 export const REFRESH_MARGIN_MS = 10_000;
 
-/** When the pass on screen should be replaced. */
+/**
+ * When the pass on screen should be replaced: `REFRESH_MARGIN_MS` before its
+ * window closes — or, for a window of 20 s or less, where that would leave the
+ * code on screen for half its life or less, halfway through the window.
+ */
 export function refreshAt(pass: SignedAccessPass, margin = REFRESH_MARGIN_MS): number {
   const { notBefore, notAfter } = pass.pass;
   return Math.max(notBefore, notAfter - Math.min(margin, (notAfter - notBefore) / 2));
