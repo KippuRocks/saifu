@@ -64,8 +64,8 @@ What Saifu does with them:
 A ticket's pass is produced on the phone (`src/passes/`, T-030-07): `@ticketto/profile-v0`'s `producePass` over the cached ticket id and the holder's account, signed with the passkey. No network is involved (`NFR-3`), so it works in airplane mode for every ticket the phone has displayed.
 
 - **QR code:** the signed pass's bytes (`encodeSignedPass`, about 445 bytes) as one binary-mode segment at error correction level M, drawn with `react-native-svg`. That is QR version 16.
-- **Window:** 60 s (`NFR-5`'s default).
-- **Refresh:** while the pass screen is open and Saifu is in the foreground, the code is replaced 10 s before its window closes. Every code is a new pass, and every pass is one passkey assertion with user verification (`features/030-saifu/plan.md` §5.3). The holder therefore confirms with face, fingerprint or screen lock about once every 50 s. Dismissing a prompt stops the refresh until the holder asks for a new code.
+- **Window:** the event's (T-030-17), as kippu-api's derived copy reports it with each holding (`passWindow`): the organiser's setting, or `NFR-5`'s 60 s default, never longer than the ledger's 5-minute maximum. The holdings cache keeps it, so a pass produced offline uses the last window Saifu read. With none, the window is 60 s.
+- **Refresh:** while the pass screen is open and Saifu is in the foreground, the code is replaced 10 s before its window closes, or halfway through a window of 20 s or less. Every code is a new pass, and every pass is one passkey assertion with user verification (`features/030-saifu/plan.md` §5.3). With the default window, the holder therefore confirms with face, fingerprint or screen lock about once every 50 s. Dismissing a prompt stops the refresh until the holder asks for a new code.
 - **Screenshots:** a code on screen can be photographed and used once within its window (`OQ-24`). The screen says so.
 
 ## Screens

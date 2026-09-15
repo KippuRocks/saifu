@@ -10,6 +10,7 @@ import { ticketDetail } from "./holdings/detail.ts";
 import type { LoadedHoldings } from "./holdings/load.ts";
 import type { SaifuLink } from "./links/links.ts";
 import { produceTicketPass } from "./passes/produce.ts";
+import { passWindowFor } from "./passes/window.ts";
 import { passkeysAvailable } from "./passkey/install.ts";
 import { CheckoutLink } from "./screens/CheckoutLink.tsx";
 import { useIncomingLinks } from "./screens/deep-links.ts";
@@ -137,9 +138,13 @@ export function App() {
   );
 
   // A pass is produced on the device from the stored credential: no network (NFR-3).
+  // Its window is the event's, as last read, or the default (T-030-17).
   const producePass = useCallback(
-    async (ticket: string) => produceTicketPass(ticket, (await services.credential()).signer),
-    [services],
+    async (ticket: string) =>
+      produceTicketPass(ticket, (await services.credential()).signer, {
+        window: passWindowFor(loaded, ticket),
+      }),
+    [services, loaded],
   );
 
   // A ticket that is no longer held, after a refresh, has no detail to show.
