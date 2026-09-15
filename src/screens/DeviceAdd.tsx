@@ -4,12 +4,12 @@ import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import { DEVICES_COPY } from "../copy/devices.ts";
 import { addDeviceCode } from "../devices/codes.ts";
 import { QrCode } from "../receive/QrCode.tsx";
-import { QrScanner } from "../receive/QrScanner.tsx";
+import { QrScanner } from "../receive/QrScanner";
 import type { Router } from "./router.ts";
 import { Screen } from "./Screen.tsx";
 
 export interface DeviceAddProps {
-  readonly userId: string;
+  readonly userHandle: string;
   readonly router: Router;
   /** Reads a scanned code as a registration for this account, or `null`. */
   readonly parse: (text: string) => Registration | null;
@@ -20,7 +20,7 @@ export interface DeviceAddProps {
  * Adding a device, on the existing phone (T-030-13): its add-device code for the
  * new phone to scan, then the new phone's registration code to scan back.
  */
-export function DeviceAdd({ userId, router, parse, onRegistration }: DeviceAddProps) {
+export function DeviceAdd({ userHandle, router, parse, onRegistration }: DeviceAddProps) {
   const [scanning, setScanning] = useState(false);
   return (
     <Screen id="device.add">
@@ -34,7 +34,7 @@ export function DeviceAdd({ userId, router, parse, onRegistration }: DeviceAddPr
         </Pressable>
         <Text style={styles.title}>{DEVICES_COPY.addTitle}</Text>
         <Text style={styles.body}>{DEVICES_COPY.addStepOne}</Text>
-        <QrCode testID="device.add.qr" text={addDeviceCode(userId)} />
+        <QrCode testID="device.add.qr" text={addDeviceCode(userHandle)} />
         <Text style={styles.body}>{DEVICES_COPY.addStepTwo}</Text>
         {scanning ? (
           <QrScanner

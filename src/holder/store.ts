@@ -2,16 +2,28 @@
 //
 // Nothing here is a key: the passkey's private key never leaves the platform
 // authenticator. The record holds what the ceremonies need to be repeated —
-// the random user id the holder's account derives from, and the passkey's
+// the passkey's user handle the holder's account derives from, and the passkey's
 // credential id — plus the registration until the ledger has accepted it, and
-// the Kippu session once the account is linked. The user id is not secret, but
-// it names the account, and the session token is a bearer credential, so the
+// the Kippu session once the account is linked. The user handle is not secret,
+// but it names the account, and the session token is a bearer credential, so the
 // record lives in the platform's secure storage (the Keychain on iOS, the
 // Keystore-backed store on Android), never in plain app storage.
 
+import { hashedUserId } from "@ticketto/profile-v0";
+
 export interface HolderRecord {
-  /** 32 random bytes as lower-case hex (features/003-profile-v0/plan.md §5.2). */
-  readonly userId: string;
+  /**
+   * The passkey's user handle, `SHA-256(userId)`, as lower-case hex: Saifu's
+   * durable identity for the holder, from which the account derives
+   * (`BLAKE2b-256(0³² ‖ userHandle)`; features/030-saifu/plan.md, ruled in M4).
+   */
+  readonly userHandle: string;
+  /**
+   * The random user id (32 bytes as lower-case hex; features/003-profile-v0/plan.md
+   * §5.2) — known only on the device that created the account. A device that
+   * joined it (T-030-13) has the user handle alone.
+   */
+  readonly userId?: string;
   /** The passkey's raw credential ids, unpadded base64url; the first is this device's. */
   readonly credentialIds: readonly string[];
   /** The registration, lower-case hex. Kept so registration can be retried. */
@@ -96,8 +108,10 @@ function parseRecord(raw: string): HolderRecord {
   if (
     r === null ||
     typeof r !== "object" ||
-    typeof r.userId !== "string" ||
-    !HEX32.test(r.userId) ||
+    (r.userId !== undefined && (typeof r.userId !== "string" || !HEX32.test(r.userId))) ||
+    (r.userHandle !== undefined &&
+      (typeof r.userHandle !== "string" || !HEX32.test(r.userHandle))) ||
+    (r.userId === undefined && r.userHandle === undefined) ||
     !Array.isArray(r.credentialIds) ||
     r.credentialIds.length === 0 ||
     !r.credentialIds.every((id) => typeof id === "string" && BASE64URL.test(id)) ||
@@ -119,6 +133,16 @@ function parseRecord(raw: string): HolderRecord {
       typeof session.expiresAt !== "number")
   ) {
     throw new HolderRecordError("the stored Kippu session is malformed");
+  }
+  if (r.userId !== undefined) {
+    // A record saved before the user handle was kept names only the user id.
+    const derived = Array.from(hashedUserId(r.userId), (b) => b.toString(16).padStart(2, "0")).join(
+      "",
+    );
+    if (r.userHandle !== undefined && r.userHandle !== derived) {
+      throw new HolderRecordError("the stored holder record is malformed");
+    }
+    return { ...(r as HolderRecord), userHandle: derived };
   }
   return r as HolderRecord;
 }

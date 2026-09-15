@@ -13,6 +13,7 @@ import {
   assertionCodec,
   encodeAuthorisation,
   encodeRegistration,
+  hashedUserId,
   holderAccountFromHashedUserId,
   V0_CONTEXT,
 } from "@ticketto/profile-v0";
@@ -29,17 +30,18 @@ export interface HolderCredentialOptions {
   readonly rpId: string;
   readonly store: HolderStore;
   /**
-   * The user id of an account that already exists, when this device joins it as
-   * a second device (T-030-13). Its passkey is then registered by the account's
-   * existing device, never by this one.
+   * The user handle (`SHA-256(userId)`, lower-case hex) of an account that
+   * already exists, when this device joins it as a second device (T-030-13).
+   * This device's passkey is created with that user handle, and registered by
+   * the account's existing device, never by this one.
    */
-  readonly joinUserId?: string;
+  readonly joinUserHandle?: string;
   /** Cryptographically secure random bytes. Defaults to `crypto.getRandomValues`. */
   readonly randomBytes?: (length: number) => Uint8Array;
 }
 
 export interface HolderCredential {
-  /** The holder's ledger account: `BLAKE2b-256(0³² ‖ SHA-256(userId))`. */
+  /** The holder's ledger account: `BLAKE2b-256(0³² ‖ userHandle)`, `userHandle = SHA-256(userId)`. */
   readonly account: AccountId;
   /** Signs a profile signing payload with the passkey; one biometric prompt per call. */
   readonly signer: Signer;
@@ -86,13 +88,18 @@ export async function holderCredential(
   const existing = await store.load();
   if (existing !== null) return credentialFrom(existing, options);
 
-  if (options.joinUserId !== undefined && !/^[0-9a-f]{64}$/.test(options.joinUserId)) {
-    throw new TypeError("a user id is 32 bytes of lower-case hex");
+  const { joinUserHandle } = options;
+  if (joinUserHandle !== undefined && !/^[0-9a-f]{64}$/.test(joinUserHandle)) {
+    throw new TypeError("a user handle is 32 bytes of lower-case hex");
   }
-  const userId = options.joinUserId ?? toHex((options.randomBytes ?? defaultRandomBytes)(32));
+  const userId =
+    joinUserHandle === undefined
+      ? toHex((options.randomBytes ?? defaultRandomBytes)(32))
+      : undefined;
+  const userHandle = joinUserHandle ?? toHex(hashedUserId(userId as string));
   const ceremonies = v0Challenger();
   let rawId: Uint8Array | undefined;
-  const webAuthn = await authenticator(userId, options.rpId, ceremonies.challenger, {
+  const webAuthn = await authenticator(userId, userHandle, options.rpId, ceremonies.challenger, {
     credentialIds: async () => (rawId === undefined ? [] : [rawId]),
     onCreated: async (_userId, id) => {
       rawId = id;
@@ -116,18 +123,26 @@ export async function holderCredential(
     } satisfies Attestation,
   });
   const record: HolderRecord = {
-    userId,
+    userHandle,
+    ...(userId === undefined ? {} : { userId }),
     credentialIds: [toBase64Url(rawId)],
     registration: toHex(registration),
     registered: false,
-    ...(options.joinUserId === undefined ? {} : { joining: true }),
+    ...(joinUserHandle === undefined ? {} : { joining: true }),
   };
   await store.save(record);
   return credentialFrom(record, options, { webAuthn, ceremonies });
 }
 
+/**
+ * papi-signers' authenticator for the holder. Its user handle is always the
+ * stored one: papi-signers hashes the user id it is given, and a device that
+ * joined an account has only the hash, so the hash it computes is overridden
+ * with the same bytes (features/030-saifu/plan.md, ruled in M4; REQ-MG-6).
+ */
 async function authenticator(
-  userId: string,
+  userId: string | undefined,
+  userHandle: string,
   rpId: string,
   challenger: ReturnType<typeof v0Challenger>["challenger"],
   ids: Pick<
@@ -139,7 +154,12 @@ async function authenticator(
     relyingParty: { id: rpId, name: RELYING_PARTY_NAME },
     ...ids,
   });
-  return new WebAuthn(userId, challenger, handler).setup();
+  const webAuthn = await new WebAuthn(userId ?? userHandle, challenger, handler).setup();
+  if (userId !== undefined && toHex(webAuthn.hashedUserId) !== userHandle) {
+    throw new Error("papi-signers' user handle disagrees with the stored one");
+  }
+  webAuthn.hashedUserId = fromHex(userHandle);
+  return webAuthn;
 }
 
 async function credentialFrom(
@@ -151,7 +171,7 @@ async function credentialFrom(
   const credentialIds = record.credentialIds.map(fromBase64Url);
   const webAuthn =
     reuse?.webAuthn ??
-    (await authenticator(record.userId, options.rpId, ceremonies.challenger, {
+    (await authenticator(record.userId, record.userHandle, options.rpId, ceremonies.challenger, {
       credentialIds: async () => credentialIds,
       onCreated: async () => {
         throw new Error("a loaded holder credential creates no passkey");

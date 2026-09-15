@@ -91,7 +91,7 @@ Transfers (`src/transfer/`, T-030-08) are signed with the passkey, sponsored thr
 
 A holder adds Saifu on a second phone of theirs (`src/devices/`, T-030-13). This is V0's only way to keep tickets after losing a phone (`REQ-CP-6`, `DEF-7`). The two phones exchange QR codes in person, and nothing passes through Kippu:
 
-1. On the existing phone, Settings → **Add a device** shows `saifu:add-device:<user id>`. The new phone ("I already use Saifu on another phone", at onboarding) scans it and creates a passkey for the same account.
+1. On the existing phone, Settings → **Add a device** shows `saifu:add-device:<user handle>` — the passkey's user handle, `SHA-256(userId)`, as lower-case hex. The new phone ("I already use Saifu on another phone", at onboarding) scans it and creates its passkey with that user handle, so it names the same account; the raw user id never leaves the first phone.
 2. The new phone shows `saifu:device-registration:<registration, base64url>` and a six-digit short code: the first four bytes of `BLAKE2b-256("saifu/v0/device-short-code" ‖ registration)`, big-endian, modulo one million.
 3. The existing phone scans it. Before the passkey prompt, it shows a full-screen confirmation, with the same short code to compare: the new phone gets full control of every ticket, and this cannot be undone.
 4. The existing phone signs `registerCredential`, sponsored. The new phone never registers itself: it waits for `getCredential`, then links to Kippu with its own credential.
@@ -206,13 +206,15 @@ Saifu is the only client holding a holder's credential (`REQ-CL-2`).
 
 - **Provisioning** (`src/holder/credential.ts`). On first use Saifu draws a
   random 32-byte user id and creates a passkey, user verification required. The
-  holder's ledger account is the Kreivo Pass derivation of that user id. Nothing
-  is shown to write down.
+  passkey's user handle is `SHA-256(userId)`, as papi-signers creates it, and it
+  is Saifu's durable identity for the holder: the ledger account is its Kreivo
+  Pass derivation, `BLAKE2b-256(0³² ‖ userHandle)`. Nothing is shown to write
+  down.
 - **The passkey signer** signs the payload it is given — a profile signing
   payload — with one biometric prompt per signature. The V0 challenger
   (`src/holder/challenger.ts`) prefixes `ticketto/v0/registration` on the
   registration ceremony only.
-- **On the device** (`src/holder/store.ts`) Saifu keeps the user id, the passkey's
+- **On the device** (`src/holder/store.ts`) Saifu keeps the user handle (and, on the phone that created the account, the user id), the passkey's
   credential id, the registration until the ledger accepts it, and the Kippu
   session — in the platform's secure storage (`expo-secure-store`: the Keychain,
   or the Keystore-backed store; IndexedDB on Saifu Web). No key: the passkey's private key never leaves

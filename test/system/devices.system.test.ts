@@ -12,7 +12,7 @@ import {
   deviceRegistrationCode,
   registrationFromDeviceCode,
   shortCode,
-  userIdFromAddDeviceCode,
+  userHandleFromAddDeviceCode,
 } from "../../src/devices/codes.ts";
 import { listDevices } from "../../src/devices/list.ts";
 import { holderCredential } from "../../src/holder/credential.ts";
@@ -49,11 +49,15 @@ describe.skipIf(!stackAvailable)(
         },
       };
 
-      const userId = userIdFromAddDeviceCode(addDeviceCode(a.holder.record.userId));
-      if (userId === null) throw new Error("add-device code");
+      const userHandle = userHandleFromAddDeviceCode(addDeviceCode(a.holder.record.userHandle));
+      if (userHandle === null) throw new Error("add-device code");
       const bDevice = simulatedDevice(stack.rpId);
       const bStore = memoryHolderStore();
-      const b = await holderCredential({ rpId: stack.rpId, store: bStore, joinUserId: userId });
+      const b = await holderCredential({
+        rpId: stack.rpId,
+        store: bStore,
+        joinUserHandle: userHandle,
+      });
 
       const registration = registrationFromDeviceCode(
         deviceRegistrationCode(b.registration),

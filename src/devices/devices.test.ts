@@ -1,19 +1,20 @@
-import { registrationAccount, verifyPass } from "@ticketto/profile-v0";
+import { hashedUserId, registrationAccount, verifyPass } from "@ticketto/profile-v0";
 import type { AccountId, Signer } from "@ticketto/sdk";
 import { afterEach, describe, expect, it } from "vitest";
 import { simulatedDevice } from "../../test/holder-device.ts";
 import { grantTicket, memoryLedger } from "../../test/memory-ledger.ts";
-import { holderCredential } from "../holder/credential.ts";
+import { fromHex, holderCredential, toHex } from "../holder/credential.ts";
 import { registerHolderCredential, waitForJoinedRegistration } from "../holder/register.ts";
 import { memoryHolderStore } from "../holder/store.ts";
 import { produceTicketPass } from "../passes/produce.ts";
+import { toBase64Url } from "../passkey/bytes.ts";
 import { type AddDeviceStep, addDeviceFlow } from "./add.ts";
 import {
   addDeviceCode,
   deviceRegistrationCode,
   registrationFromDeviceCode,
   shortCode,
-  userIdFromAddDeviceCode,
+  userHandleFromAddDeviceCode,
 } from "./codes.ts";
 
 const RP_ID = "kippu.example";
@@ -49,13 +50,20 @@ describe("T-030-13 adding a second device", () => {
       cannotTransfer: false,
     });
 
-    // 1. The existing phone shows its user id; the new phone scans it and creates its passkey.
-    const scanned = userIdFromAddDeviceCode(addDeviceCode(a.holder.record.userId));
+    // 1. The existing phone shows its user handle; the new phone scans it and creates its passkey.
+    const scanned = userHandleFromAddDeviceCode(addDeviceCode(a.holder.record.userHandle));
     if (scanned === null) throw new Error("the add-device code did not scan");
     const bDevice = simulatedDevice(RP_ID);
     const bStore = memoryHolderStore();
-    const b = await holderCredential({ rpId: RP_ID, store: bStore, joinUserId: scanned });
+    const b = await holderCredential({ rpId: RP_ID, store: bStore, joinUserHandle: scanned });
     expect(b.account).toBe(a.holder.account);
+    // Both passkeys carry the same user handle, and the raw user id stays on the first phone.
+    expect(bDevice.bridge.creates[0]?.userId).toBe(
+      toBase64Url(fromHex(a.holder.record.userHandle)),
+    );
+    expect(a.holder.record.userHandle).toBe(toHex(hashedUserId(a.holder.record.userId ?? "")));
+    expect(b.record.userHandle).toBe(a.holder.record.userHandle);
+    expect(b.record.userId).toBeUndefined();
     expect(b.record.joining).toBe(true);
     await expect(registerHolderCredential(ledger, b, bStore)).rejects.toThrow(/other device/);
 
@@ -135,21 +143,21 @@ describe("T-030-13 adding a second device", () => {
   });
 
   it("scans only codes of the right kind", () => {
-    const userId = "ab".repeat(32);
-    expect(userIdFromAddDeviceCode(`saifu:add-device:${userId}`)).toBe(userId);
+    const userHandle = "ab".repeat(32);
+    expect(userHandleFromAddDeviceCode(`saifu:add-device:${userHandle}`)).toBe(userHandle);
     for (const text of [
-      userId,
-      `ticketto:account:${userId}`,
-      `saifu:add-device:${userId.slice(1)}`,
+      userHandle,
+      `ticketto:account:${userHandle}`,
+      `saifu:add-device:${userHandle.slice(1)}`,
       "saifu:device-registration:AAAA",
     ]) {
-      expect(userIdFromAddDeviceCode(text), text).toBeNull();
+      expect(userHandleFromAddDeviceCode(text), text).toBeNull();
     }
     expect(
-      registrationFromDeviceCode("saifu:device-registration:!!!", userId as AccountId),
+      registrationFromDeviceCode("saifu:device-registration:!!!", userHandle as AccountId),
     ).toBeNull();
     expect(
-      registrationFromDeviceCode(`saifu:add-device:${userId}`, userId as AccountId),
+      registrationFromDeviceCode(`saifu:add-device:${userHandle}`, userHandle as AccountId),
     ).toBeNull();
   });
 
@@ -168,7 +176,7 @@ describe("T-030-13 adding a second device", () => {
     const b = await holderCredential({
       rpId: RP_ID,
       store: bStore,
-      joinUserId: a.holder.record.userId,
+      joinUserHandle: a.holder.record.userHandle,
     });
     let slept = 0;
     const found = await waitForJoinedRegistration(ledger, b, bStore, {

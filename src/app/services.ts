@@ -86,7 +86,7 @@ export interface HolderServices {
   /** A join under way on this phone (T-030-13): its registration and short code. */
   joiningDevice(): Promise<{ registration: Uint8Array; shortCode: string } | null>;
   /** Creates this phone's passkey for an existing account, as its second device. */
-  joinDevice(userId: string): Promise<{ registration: Uint8Array; shortCode: string }>;
+  joinDevice(userHandle: string): Promise<{ registration: Uint8Array; shortCode: string }>;
   /** Waits for the account's other device to register this one. */
   waitForJoin(cancelled: () => boolean): Promise<boolean>;
   /** Reads a scanned code as a new device's registration for `account`. */
@@ -171,8 +171,12 @@ export function holderServices(config: BuildConfig = buildConfig()): HolderServi
       const registration = fromHex(record.registration);
       return { registration, shortCode: shortCode(registration) };
     },
-    async joinDevice(userId) {
-      const holder = await holderCredential({ rpId: config.rpId, store, joinUserId: userId });
+    async joinDevice(userHandle) {
+      const holder = await holderCredential({
+        rpId: config.rpId,
+        store,
+        joinUserHandle: userHandle,
+      });
       return { registration: holder.registration, shortCode: shortCode(holder.registration) };
     },
     async waitForJoin(cancelled) {

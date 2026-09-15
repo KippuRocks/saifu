@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import { DEVICES_COPY } from "../copy/devices.ts";
-import { deviceRegistrationCode, userIdFromAddDeviceCode } from "../devices/codes.ts";
+import { deviceRegistrationCode, userHandleFromAddDeviceCode } from "../devices/codes.ts";
 import { QrCode } from "../receive/QrCode.tsx";
-import { QrScanner } from "../receive/QrScanner.tsx";
+import { QrScanner } from "../receive/QrScanner";
 import type { Router } from "./router.ts";
 import { Screen } from "./Screen.tsx";
 
@@ -16,8 +16,8 @@ export interface DeviceJoinProps {
   readonly router: Router;
   /** The registration of a join already under way on this phone, if any. */
   readonly resume: () => Promise<JoiningDevice | null>;
-  /** Creates this phone's passkey for the account of `userId`. */
-  readonly join: (userId: string) => Promise<JoiningDevice>;
+  /** Creates this phone's passkey for the account whose passkeys carry `userHandle`. */
+  readonly join: (userHandle: string) => Promise<JoiningDevice>;
   /** Waits for the other phone to register this one; `true` once it has. */
   readonly waitForRegistration: (cancelled: () => boolean) => Promise<boolean>;
   /** This phone's credential is on the ledger: finish setting up. */
@@ -95,13 +95,13 @@ export function DeviceJoin({
             <Text style={styles.body}>{DEVICES_COPY.joinScan}</Text>
             <QrScanner
               instruction={DEVICES_COPY.joinScanInstruction}
-              onValue={(userId) => {
+              onValue={(userHandle) => {
                 setStage({ kind: "creating" });
-                join(userId)
+                join(userHandle)
                   .then((joining) => setStage({ kind: "showing", joining, timedOut: false }))
                   .catch(() => setStage({ kind: "failed" }));
               }}
-              parse={userIdFromAddDeviceCode}
+              parse={userHandleFromAddDeviceCode}
               testID="device-join-scanner"
             />
           </>

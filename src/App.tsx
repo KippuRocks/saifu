@@ -1,4 +1,4 @@
-import { holderAccountId } from "@ticketto/profile-v0";
+import { holderAccountFromHashedUserId } from "@ticketto/profile-v0";
 import type { AccountId } from "@ticketto/sdk";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -7,6 +7,7 @@ import { type HolderPhase, phaseFor } from "./app/holder-state.ts";
 import { holderServices } from "./app/services.ts";
 import { PENDING_LINK_COPY } from "./copy/links.ts";
 import type { AddDeviceFlow, AddDeviceStep } from "./devices/add.ts";
+import { fromHex } from "./holder/credential.ts";
 import { ledgerTicketDetail } from "./holdings/degraded.ts";
 import { ticketDetail } from "./holdings/detail.ts";
 import type { LoadedHoldings } from "./holdings/load.ts";
@@ -59,11 +60,12 @@ export function App() {
   /** A link into Saifu that waits for the holder to be set up. */
   const [pending, setPending] = useState<SaifuLink | null>(null);
 
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userHandle, setUserHandle] = useState<string | null>(null);
   const refresh = useCallback(async () => {
     const record = await services.store.load();
-    setUserId(record?.userId ?? null);
-    const account = record === null ? null : holderAccountId(record.userId);
+    setUserHandle(record?.userHandle ?? null);
+    const account =
+      record === null ? null : holderAccountFromHashedUserId(fromHex(record.userHandle));
     setPhase(phaseFor(record, account, Date.now()));
   }, [services]);
 
@@ -340,7 +342,7 @@ export function App() {
         <Receive account={account} router={router} />
       ) : screen === "settings.main" && account !== null ? (
         <Settings account={account} loadDevices={loadDevices} router={router} />
-      ) : screen === "device.add" && account !== null && userId !== null ? (
+      ) : screen === "device.add" && account !== null && userHandle !== null ? (
         <DeviceAdd
           onRegistration={(registration) => {
             setAdding({ flow: null, step: null });
@@ -363,7 +365,7 @@ export function App() {
           }}
           parse={(text) => services.parseDeviceRegistration(text, account)}
           router={router}
-          userId={userId}
+          userHandle={userHandle}
         />
       ) : screen === "device.add.confirm" ? (
         <DeviceAddConfirm
