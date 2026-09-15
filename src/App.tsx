@@ -17,6 +17,7 @@ import { useIncomingLinks } from "./screens/deep-links.ts";
 import { Holdings, type OpenedHolding } from "./screens/Holdings.tsx";
 import { InvitationRedeem } from "./screens/InvitationRedeem.tsx";
 import { Onboarding } from "./screens/Onboarding.tsx";
+import { Receive } from "./screens/Receive.tsx";
 import { useRouter } from "./screens/router.ts";
 import { Settings } from "./screens/Settings.tsx";
 import { Starting } from "./screens/Starting.tsx";
@@ -211,6 +212,8 @@ export function App() {
           ticket={detail.id}
           title={detail.title}
         />
+      ) : screen === "tickets.receive" && account !== null ? (
+        <Receive account={account} router={router} />
       ) : screen === "settings.main" && account !== null ? (
         <Settings account={account} router={router} />
       ) : (

@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { RECEIVE_COPY } from "../copy/receive.ts";
 import { type LedgerHolding, provenanceTitle } from "../holdings/degraded.ts";
 import { className, eventName, formatDate, placeText } from "../holdings/detail.ts";
 import type { LoadedHoldings } from "../holdings/load.ts";
@@ -94,6 +95,13 @@ export function Holdings({ loaded, router, onRefresh }: HoldingsProps) {
             <Text style={styles.cardLine}>{card.place}</Text>
           </Pressable>
         ))}
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.navigate("tickets.list", "tickets.receive", {})}
+          testID="holdings-receive"
+        >
+          <Text style={styles.link}>{RECEIVE_COPY.open}</Text>
+        </Pressable>
         <Pressable accessibilityRole="button" onPress={onRefresh} testID="holdings-refresh">
           <Text style={styles.link}>Refresh</Text>
         </Pressable>

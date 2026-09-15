@@ -28,7 +28,8 @@
       "title": "Your tickets",
       "navigatesTo": [
         "settings.main",
-        "ticket.detail"
+        "ticket.detail",
+        "tickets.receive"
       ]
     },
     {
@@ -37,6 +38,14 @@
       "title": "Ticket",
       "navigatesTo": [
         "ticket.pass",
+        "tickets.list"
+      ]
+    },
+    {
+      "screenId": "tickets.receive",
+      "route": null,
+      "title": "Receive a ticket",
+      "navigatesTo": [
         "tickets.list"
       ]
     },

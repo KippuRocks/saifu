@@ -14,7 +14,16 @@ export interface QrMatrix {
 }
 
 export function passQr(bytes: Uint8Array): QrMatrix {
-  const code = create([{ data: bytes, mode: "byte" }], { errorCorrectionLevel: "M" });
+  return qrMatrix([{ data: bytes, mode: "byte" }]);
+}
+
+/** A text QR code, such as a receive code (T-030-09), at level M. */
+export function textQr(text: string): QrMatrix {
+  return qrMatrix(text);
+}
+
+function qrMatrix(content: Parameters<typeof create>[0]): QrMatrix {
+  const code = create(content, { errorCorrectionLevel: "M" });
   const { size, data } = code.modules;
   return { size, dark: Array.from(data, (module) => module === 1), version: code.version };
 }

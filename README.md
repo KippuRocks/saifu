@@ -68,6 +68,10 @@ A ticket's pass is produced on the phone (`src/passes/`, T-030-07): `@ticketto/p
 - **Refresh:** while the pass screen is open and Saifu is in the foreground, the code is replaced 10 s before its window closes, or halfway through a window of 20 s or less. Every code is a new pass, and every pass is one passkey assertion with user verification (`features/030-saifu/plan.md` §5.3). With the default window, the holder therefore confirms with face, fingerprint or screen lock about once every 50 s. Dismissing a prompt stops the refresh until the holder asks for a new code.
 - **Screenshots:** a code on screen can be photographed and used once within its window (`OQ-24`). The screen says so.
 
+## Receiving a ticket
+
+A holder receives a ticket by showing their **receive code** (`src/receive/`, T-030-09). It is a QR code of the text `ticketto:account:<account id>`: the holder's account, and nothing that can use a ticket. The sender's Saifu scans it with `AccountScanner`, which reads only codes with that prefix. A ticket id or an event id is also 64 hex characters, and a ticket sent to one is lost, so a bare id is never accepted as a receiver.
+
 ## Screens
 
 Every screen renders inside `<Screen id>` (`src/screens/Screen.tsx`): its

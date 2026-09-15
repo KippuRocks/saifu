@@ -21,6 +21,17 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "plugins": ["expo-dev-client", "expo-secure-store"]
+    "plugins": [
+      "expo-dev-client",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Saifu uses the camera to scan the code of the person you send a ticket to.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ]
+    ]
   }
 }
