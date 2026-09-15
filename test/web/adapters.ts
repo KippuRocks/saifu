@@ -10,6 +10,8 @@ import type * as NativeRecoveryCopy from "../../src/copy/recovery.ts";
 import type * as WebRecoveryCopy from "../../src/copy/recovery.web.ts";
 import type * as NativePasskeys from "../../src/passkey/install.ts";
 import type * as WebPasskeys from "../../src/passkey/install.web.ts";
+import type * as NativeOffline from "../../src/platform/offline.ts";
+import type * as WebOffline from "../../src/platform/offline.web.ts";
 import type * as NativeSecureStorage from "../../src/platform/secure-storage.ts";
 import type * as WebSecureStorage from "../../src/platform/secure-storage.web.ts";
 import type * as NativeAccountScanner from "../../src/receive/AccountScanner.tsx";
@@ -22,6 +24,7 @@ type Implements<Native, Web extends Native> = [Native, Web];
 export type Adapters = [
   Implements<Pick<typeof NativePasskeys, "passkeysAvailable">, typeof WebPasskeys>,
   Implements<typeof NativeSecureStorage, typeof WebSecureStorage>,
+  Implements<typeof NativeOffline, typeof WebOffline>,
   Implements<typeof NativeDeepLinks, typeof WebDeepLinks>,
   Implements<typeof NativeAccountScanner, typeof WebAccountScanner>,
   Implements<

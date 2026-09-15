@@ -12,8 +12,10 @@ import type { BrowserContext, Page, Route } from "@playwright/test";
 import { createMemoryBackend } from "@ticketto/backend-memory";
 import { createProfileV0 } from "@ticketto/profile-v0";
 import { HOLDER_RP_ID, LINK_BASE, PLACEHOLDER_ENDPOINTS } from "../../app.config.ts";
+import type { HoldingsRead } from "../../src/holdings/types.ts";
 import { saifuTicketto } from "../../src/ledger/ticketto.ts";
-import { localSponsor } from "../memory-ledger.ts";
+import { holdingsRead, pressPass } from "../holdings-fixture.ts";
+import { grantTicket, localSponsor } from "../memory-ledger.ts";
 import type { StandIn } from "./stand-ins/http.ts";
 import { withCors } from "./stand-ins/http.ts";
 import { kippuStandIn } from "./stand-ins/kippu.ts";
@@ -71,18 +73,74 @@ export async function saifuWeb(context: BrowserContext) {
   const backend = createMemoryBackend({ profile: createProfileV0({ rpId }) });
   const ledger = saifuTicketto({ backend, sponsor: localSponsor(), rpId });
   const kippu = kippuStandIn(ledger, rpId);
+  let served = 0;
+  let offline = false;
 
   const services: readonly [string, StandIn][] = [
     [PLACEHOLDER_ENDPOINTS.ledgerUrl, ledgerStandIn(backend)],
     [PLACEHOLDER_ENDPOINTS.sponsorUrl, sponsorStandIn()],
     [PLACEHOLDER_ENDPOINTS.kippuApiUrl, kippu.standIn],
   ];
-  await context.route(`${origin}/**`, serveApp);
+  await context.route(`${origin}/**`, (route) => {
+    if (offline) return route.abort("internetdisconnected");
+    served++;
+    return serveApp(route);
+  });
   for (const [url, standIn] of services) {
     const cors = withCors(origin, standIn);
-    await context.route(`${url}/**`, (route) => answer(route, cors));
+    await context.route(`${url}/**`, (route) => {
+      if (offline) return route.abort("internetdisconnected");
+      served++;
+      return answer(route, cors);
+    });
   }
-  return { origin, rpId, ledger, kippu };
+
+  const granted = new Map<string, Promise<{ ticket: string; event: string }>>();
+  return {
+    origin,
+    rpId,
+    ledger,
+    kippu,
+    /** How many requests reached the network: the app's origin or a service. */
+    served: () => served,
+    /**
+     * Turns every radio off: the browser is offline, and a request that would
+     * still reach an intercepted origin fails as a disconnected one does.
+     */
+    async goOffline() {
+      offline = true;
+      await context.setOffline(true);
+    },
+    /**
+     * Grants every holder who links a transferable ticket on the ledger, which
+     * Kippu's copy then lists. Answers the first holder's account and ticket.
+     */
+    grantTickets() {
+      kippu.setHoldings(async (account): Promise<HoldingsRead> => {
+        let issued = granted.get(account);
+        if (issued === undefined) {
+          issued = grantTicket(ledger, account, { cannotResale: false, cannotTransfer: false });
+          granted.set(account, issued);
+        }
+        const { ticket, event } = await issued;
+        return holdingsRead([
+          pressPass({
+            id: ticket,
+            event,
+            holder: account,
+            provenance: "Granted",
+            restrictions: { cannotResale: false, cannotTransfer: false },
+            kippuClass: { name: "Stalls" },
+          }),
+        ]);
+      });
+      return async () => {
+        const [first] = granted.entries();
+        if (first === undefined) throw new Error("no holder has linked");
+        return { account: first[0], ...(await first[1]) };
+      };
+    },
+  };
 }
 
 /**

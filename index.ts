@@ -4,6 +4,9 @@ import "./src/platform/install-polyfills.ts";
 import "./src/passkey/install";
 import { registerRootComponent } from "expo";
 import { App } from "./src/App";
+import { installOffline } from "./src/platform/offline";
+
+installOffline();
 
 // Registers the root component as `main`, for development and release builds alike.
 registerRootComponent(App);

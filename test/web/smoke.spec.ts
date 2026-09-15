@@ -1,7 +1,4 @@
 import { expect, test } from "@playwright/test";
-import type { HoldingsRead } from "../../src/holdings/types.ts";
-import { holdingsRead, pressPass } from "../holdings-fixture.ts";
-import { grantTicket } from "../memory-ledger.ts";
 import { CAMERA_RECEIVER } from "./camera.ts";
 import { DIST, saifuWeb, virtualAuthenticator } from "./stack.ts";
 
@@ -64,36 +61,12 @@ test("T-030-18: Saifu Web scans a receive code with the camera, and REQ-FR-3's w
 }) => {
   const stack = await saifuWeb(context);
   await virtualAuthenticator(page);
-  const granted = new Map<string, Promise<HoldingsRead>>();
-  stack.kippu.setHoldings((account) => {
-    let read = granted.get(account);
-    if (read === undefined) {
-      read = grantTicket(stack.ledger, account, {
-        cannotResale: false,
-        cannotTransfer: false,
-      }).then(({ event, ticket }) =>
-        holdingsRead([
-          pressPass({
-            id: ticket,
-            event,
-            holder: account,
-            provenance: "Granted",
-            restrictions: { cannotResale: false, cannotTransfer: false },
-            kippuClass: { name: "Stalls" },
-          }),
-        ]),
-      );
-      granted.set(account, read);
-    }
-    return read;
-  });
+  const holding = stack.grantTickets();
 
   await page.goto(`${stack.origin}/`);
   await page.getByTestId("onboarding-set-up").click();
-  await expect(page.locator('[data-screen="tickets.list"]')).toBeVisible();
-  const [account] = granted.keys();
-  const read = await granted.get(account as string);
-  const ticket = read?.holdings[0]?.ticket.id as string;
+  await expect(page.locator('[data-testid^="holding-"]')).toBeVisible();
+  const { ticket } = await holding();
 
   await page.getByTestId(`holding-${ticket}`).click();
   await page.getByTestId("ticket-detail-transfer").click();
