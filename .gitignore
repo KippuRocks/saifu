@@ -25,6 +25,10 @@ expo-env.d.ts
 
 # Build outputs
 build/
+
+# Playwright (Saifu Web's smoke test)
+playwright-report/
+test-results/
 *.apk
 *.app
 *.tsbuildinfo

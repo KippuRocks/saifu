@@ -75,6 +75,36 @@ jobs:
           node-version: 24
       - run: pnpm vendor:check
 
+  # T-030-18: Saifu Web — the same app from Expo's web target, exported, then driven
+  # in Chromium with a virtual authenticator: it onboards, registers and shows the
+  # checkout pairing code. The page runs at its own origin, saifu.kippu.rocks, and
+  # every service it calls is a local stand-in answered through request
+  # interception (test/web/stack.ts): nothing is deployed and no DNS is involved.
+  web:
+    name: Saifu Web — build and smoke test (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm web:build
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm web:smoke
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: saifu-web-smoke
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
   # T-030-01: a development build (expo-dev-client, Debug) is generated with
   # `expo prebuild`, built locally on the runner, installed on an emulator, and
   # driven by Maestro. No Expo or EAS account is involved.

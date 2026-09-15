@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ONBOARDING_COPY } from "../copy/onboarding";
 import { Disclosure } from "./Disclosure.tsx";
 import { Screen } from "./Screen.tsx";
 
@@ -33,9 +34,7 @@ export function Onboarding({
         )}
         <Disclosure />
         {passkeysAvailable ? null : (
-          <Text style={styles.notice}>
-            This phone cannot create passkeys, so Saifu cannot be set up on it.
-          </Text>
+          <Text style={styles.notice}>{ONBOARDING_COPY.passkeysUnavailable}</Text>
         )}
         {failed ? (
           <Text style={styles.notice} testID="onboarding-failed">

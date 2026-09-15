@@ -1,5 +1,7 @@
 import "./src/platform/install-polyfills.ts";
-import "./src/passkey/install.ts";
+// Platform modules are imported without their extension, so Metro picks the
+// `.web.ts` beside a native one for Saifu Web (T-030-18).
+import "./src/passkey/install";
 import { registerRootComponent } from "expo";
 import { App } from "./src/App";
 

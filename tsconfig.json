@@ -20,6 +20,7 @@
     "tools",
     "test",
     "vitest.config.ts",
+    "playwright.config.ts",
     "expo-env.d.ts",
     ".expo/types/**/*.ts"
   ]

@@ -59,8 +59,15 @@ describe("RP id domain documents", () => {
 });
 
 describe("RP id configuration", () => {
-  it("defaults to the placeholder under the reserved .example TLD", () => {
-    expect(passkeyConfig({})).toEqual({ rpId: "kippu.example", placeholder: true });
+  it("defaults to the holder RP id as ruled, saifu.kippu.rocks", () => {
+    expect(passkeyConfig({})).toEqual({ rpId: "saifu.kippu.rocks", placeholder: false });
+  });
+
+  it("marks a domain under the reserved .example TLD as a placeholder", () => {
+    expect(passkeyConfig({ SAIFU_RP_ID: "kippu.example" })).toEqual({
+      rpId: "kippu.example",
+      placeholder: true,
+    });
   });
 
   it("takes a configured domain", () => {
@@ -113,12 +120,13 @@ describe("T-030-10 link host", () => {
     ]);
   });
 
-  it("takes an https origin, defaulting to a placeholder", () => {
+  it("takes an https origin, defaulting to Saifu Web's origin under the holder RP id", () => {
     expect(linksConfig({})).toEqual({
-      linkBase: "https://saifu.kippu.example",
-      host: "saifu.kippu.example",
-      placeholder: true,
+      linkBase: "https://saifu.kippu.rocks",
+      host: "saifu.kippu.rocks",
+      placeholder: false,
     });
+    expect(linksConfig({ SAIFU_LINK_BASE: "https://saifu.kippu.example" }).placeholder).toBe(true);
     expect(linksConfig({ SAIFU_LINK_BASE: "https://links.example.org/" }).linkBase).toBe(
       "https://links.example.org",
     );

@@ -1,7 +1,10 @@
 {
   "format": "kippu.screens/1",
   "app": "saifu",
-  "platform": "native",
+  "platforms": [
+    "native",
+    "web"
+  ],
   "screens": [
     {
       "screenId": "app.starting",

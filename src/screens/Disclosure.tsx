@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { RECOVERY_DISCLOSURE } from "../copy/recovery.ts";
+import { RECOVERY_DISCLOSURE } from "../copy/recovery";
 
 /** The recovery disclosure, as onboarding and settings both show it. */
 export function Disclosure() {

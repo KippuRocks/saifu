@@ -21,6 +21,11 @@
       },
       "predictiveBackGestureEnabled": false
     },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/icon.png"
+    },
     "plugins": [
       "expo-dev-client",
       "expo-secure-store",
