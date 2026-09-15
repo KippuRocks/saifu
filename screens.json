@@ -21,6 +21,7 @@
       "title": "Set up Saifu",
       "navigatesTo": [
         "checkout.link",
+        "device.join",
         "invitation.redeem",
         "tickets.list"
       ]
@@ -94,6 +95,33 @@
       "route": null,
       "title": "Settings",
       "navigatesTo": [
+        "device.add",
+        "tickets.list"
+      ]
+    },
+    {
+      "screenId": "device.add",
+      "route": null,
+      "title": "Add a device",
+      "navigatesTo": [
+        "device.add.confirm",
+        "settings.main"
+      ]
+    },
+    {
+      "screenId": "device.add.confirm",
+      "route": null,
+      "title": "Confirm the new device",
+      "navigatesTo": [
+        "settings.main"
+      ]
+    },
+    {
+      "screenId": "device.join",
+      "route": null,
+      "title": "Use Saifu on this phone too",
+      "navigatesTo": [
+        "holder.onboarding",
         "tickets.list"
       ]
     },

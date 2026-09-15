@@ -33,7 +33,9 @@ describe("T-030-03 holder credential", () => {
     expect(record?.userId).toMatch(/^[0-9a-f]{64}$/);
     expect(record?.registered).toBe(false);
     expect(record?.credentialIds).toEqual([toBase64Url(authenticator.credentialId)]);
-    expect(holder.account).toBe(holderAccountId(holder.record.userId));
+    expect(holder.account).toBe(holderAccountId(holder.record.userId ?? ""));
+    // The passkey's user handle is SHA-256(userId), kept as the holder's identity.
+    expect(bridge.creates[0]?.userId).toBe(toBase64Url(fromHex(holder.record.userHandle)));
 
     // User verification required, bound to the RP id.
     expect(bridge.creates).toHaveLength(1);

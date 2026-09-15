@@ -3,7 +3,7 @@ import type { HolderRecord } from "../holder/store.ts";
 import { phaseFor } from "./holder-state.ts";
 
 const record: HolderRecord = {
-  userId: "ab".repeat(32),
+  userHandle: "ab".repeat(32),
   credentialIds: ["AQID"],
   registration: "00",
   registered: true,

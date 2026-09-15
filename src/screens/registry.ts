@@ -43,6 +43,9 @@ export const SCREENS = {
   "tickets.receive": { title: "Receive a ticket", route: null, params: [] },
   "ticket.pass": { title: "Access pass", route: null, params: ["ticket"] },
   "settings.main": { title: "Settings", route: null, params: [] },
+  "device.add": { title: "Add a device", route: null, params: [] },
+  "device.add.confirm": { title: "Confirm the new device", route: null, params: [] },
+  "device.join": { title: "Use Saifu on this phone too", route: null, params: [] },
   "checkout.link": {
     title: "Pair with your checkout",
     route: "/checkout#:handoffToken",

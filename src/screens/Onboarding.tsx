@@ -1,6 +1,8 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { DEVICES_COPY } from "../copy/devices.ts";
 import { ONBOARDING_COPY } from "../copy/onboarding";
 import { Disclosure } from "./Disclosure.tsx";
+import type { Router } from "./router.ts";
 import { Screen } from "./Screen.tsx";
 
 export interface OnboardingProps {
@@ -8,6 +10,7 @@ export interface OnboardingProps {
   readonly failed: boolean;
   readonly passkeysAvailable: boolean;
   readonly onSetUp: () => void;
+  readonly router: Router;
   /** Why setup is needed now: a link into Saifu is waiting for it. */
   readonly pendingNotice?: string | null;
 }
@@ -21,6 +24,7 @@ export function Onboarding({
   failed,
   passkeysAvailable,
   onSetUp,
+  router,
   pendingNotice = null,
 }: OnboardingProps) {
   return (
@@ -53,6 +57,14 @@ export function Onboarding({
               {busy ? "Setting up…" : "I understand, set up Saifu"}
             </Text>
           </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            disabled={busy || !passkeysAvailable}
+            onPress={() => router.navigate("holder.onboarding", "device.join", {})}
+            testID="onboarding-join"
+          >
+            <Text style={styles.link}>{DEVICES_COPY.joinOffer}</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </Screen>
@@ -67,5 +79,6 @@ const styles = StyleSheet.create({
   actions: { gap: 12 },
   button: { backgroundColor: "#111", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
   buttonDim: { opacity: 0.6 },
+  link: { fontSize: 16, color: "#1f5fbf", textAlign: "center", paddingVertical: 8 },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });

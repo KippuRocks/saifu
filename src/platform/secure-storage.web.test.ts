@@ -4,7 +4,7 @@ import { type HolderRecord, secureHolderStore } from "../holder/store.ts";
 import { indexedDbStorage } from "./secure-storage.web.ts";
 
 const record: HolderRecord = {
-  userId: "ab".repeat(32),
+  userHandle: "ab".repeat(32),
   credentialIds: ["AQID"],
   registration: "0000",
   registered: true,

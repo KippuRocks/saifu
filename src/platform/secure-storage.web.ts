@@ -1,5 +1,5 @@
 // Where Saifu Web keeps the holder record (T-030-18; features/030-saifu/plan.md
-// §5.1a): the user id, the passkey's credential id, the registration until the
+// §5.1a): the user handle, the passkey's credential id, the registration until the
 // ledger accepts it, and the Kippu session — in IndexedDB, on this origin only.
 //
 // A browser has no store like the Keychain: IndexedDB is readable by any script
