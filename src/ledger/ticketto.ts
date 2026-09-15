@@ -12,6 +12,7 @@ import { connectOffchainBackend } from "@ticketto/binding-offchain";
 import { createProfileV0 } from "@ticketto/profile-v0";
 import {
   type Backend,
+  type Cursor,
   createTicketto,
   type Result,
   type Sponsor,
@@ -47,6 +48,11 @@ export interface LedgerEndpoints {
   /** Kippu's sponsor relay's base URL. */
   readonly sponsorUrl: string;
   readonly rpId: string;
+  /**
+   * The cursor of the last ledger record Saifu has seen, sent to the relay so a
+   * relay whose copy lags waits for it rather than refusing (`REQ-SP-5`).
+   */
+  readonly receiptCursor?: () => string | undefined;
 }
 
 /**
@@ -61,7 +67,12 @@ export async function connectLedger(endpoints: LedgerEndpoints): Promise<Result<
     ok: true,
     value: saifuTicketto({
       backend: backend.value,
-      sponsor: createRelaySponsor({ url: endpoints.sponsorUrl }),
+      sponsor: createRelaySponsor({
+        url: endpoints.sponsorUrl,
+        ...(endpoints.receiptCursor === undefined
+          ? {}
+          : { receiptCursor: endpoints.receiptCursor as () => Cursor | undefined }),
+      }),
       rpId: endpoints.rpId,
     }),
   };

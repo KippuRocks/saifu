@@ -1,4 +1,5 @@
 import { holderAccountId } from "@ticketto/profile-v0";
+import type { AccountId } from "@ticketto/sdk";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -23,6 +24,10 @@ import { Settings } from "./screens/Settings.tsx";
 import { Starting } from "./screens/Starting.tsx";
 import { TicketDetail } from "./screens/TicketDetail.tsx";
 import { TicketPass } from "./screens/TicketPass.tsx";
+import { TicketTransfer } from "./screens/TicketTransfer.tsx";
+import { TransferSending } from "./screens/TransferSending.tsx";
+import { TransferWarning } from "./screens/TransferWarning.tsx";
+import type { TransferFlow, TransferStep } from "./transfer/transfer.ts";
 
 /** The held ticket a `ticket.detail` location names, from whichever source loaded it. */
 function openedHolding(
@@ -148,6 +153,52 @@ export function App() {
     [services, loaded],
   );
 
+  // A transfer (T-030-08): the flow outlives the screens it passes through.
+  const [transfer, setTransfer] = useState<{
+    readonly flow: TransferFlow | null;
+    readonly step: TransferStep | null;
+  }>({ flow: null, step: null });
+
+  const beginTransfer = useCallback(
+    async (receiver: AccountId) => {
+      if (detail === null || account === null) return;
+      const ticket = detail.id;
+      const seen =
+        loaded !== null && loaded.source !== "none"
+          ? loaded.entry.read.freshness.cursor
+          : undefined;
+      setTransfer({ flow: null, step: null });
+      const flow = await services.transfer(
+        { ticket, event: detail.eventId, receiver },
+        account,
+        seen,
+        (step) => {
+          if (step.kind === "done") {
+            // The copy has caught up: refresh the holdings before saying it is done.
+            reload()
+              .catch(() => {})
+              .then(() => setTransfer((current) => ({ ...current, step })));
+            return;
+          }
+          setTransfer((current) => ({ ...current, step }));
+          if (step.kind === "warning") {
+            navigate("ticket.transfer", "ticket.transfer.warning", { ticket, receiver });
+          } else if (step.kind === "signing") {
+            navigate("ticket.transfer", "ticket.transfer.sending", { ticket, receiver });
+          }
+        },
+      );
+      if ("failed" in flow) {
+        setTransfer({ flow: null, step: { kind: "failed", code: flow.failed } });
+        navigate("ticket.transfer", "ticket.transfer.sending", { ticket, receiver });
+        return;
+      }
+      setTransfer((current) => ({ ...current, flow }));
+      await flow.begin();
+    },
+    [detail, account, loaded, services, navigate, reload],
+  );
+
   // A ticket that is no longer held, after a refresh, has no detail to show.
   useEffect(() => {
     if (screen === "ticket.detail" && loaded !== null && opened === null) {
@@ -211,6 +262,45 @@ export function App() {
           router={router}
           ticket={detail.id}
           title={detail.title}
+        />
+      ) : screen === "ticket.transfer" &&
+        detail !== null &&
+        detail.transferable &&
+        account !== null ? (
+        <TicketTransfer
+          check={(input) => services.checkReceiver(input, account)}
+          onReceiver={(receiver) => {
+            beginTransfer(receiver).catch(() => {});
+          }}
+          router={router}
+          ticket={detail.id}
+          title={detail.title}
+        />
+      ) : screen === "ticket.transfer.warning" && router.location.params.receiver !== undefined ? (
+        <TransferWarning
+          onCancel={() =>
+            navigate("ticket.transfer.warning", "ticket.detail", {
+              ticket: router.location.params.ticket as string,
+            })
+          }
+          onConfirm={() => {
+            navigate("ticket.transfer.warning", "ticket.transfer.sending", {
+              ticket: router.location.params.ticket as string,
+              receiver: router.location.params.receiver as string,
+            });
+            transfer.flow?.confirm().catch(() => {});
+          }}
+          receiver={router.location.params.receiver}
+        />
+      ) : screen === "ticket.transfer.sending" ? (
+        <TransferSending
+          onFailed={() =>
+            navigate("ticket.transfer.sending", "ticket.detail", {
+              ticket: router.location.params.ticket as string,
+            })
+          }
+          onFinish={() => navigate("ticket.transfer.sending", "tickets.list", {})}
+          step={transfer.step}
         />
       ) : screen === "tickets.receive" && account !== null ? (
         <Receive account={account} router={router} />

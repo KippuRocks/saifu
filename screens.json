@@ -38,6 +38,35 @@
       "title": "Ticket",
       "navigatesTo": [
         "ticket.pass",
+        "ticket.transfer",
+        "tickets.list"
+      ]
+    },
+    {
+      "screenId": "ticket.transfer",
+      "route": null,
+      "title": "Transfer a ticket",
+      "navigatesTo": [
+        "ticket.detail",
+        "ticket.transfer.sending",
+        "ticket.transfer.warning"
+      ]
+    },
+    {
+      "screenId": "ticket.transfer.warning",
+      "route": null,
+      "title": "Transfer warning",
+      "navigatesTo": [
+        "ticket.detail",
+        "ticket.transfer.sending"
+      ]
+    },
+    {
+      "screenId": "ticket.transfer.sending",
+      "route": null,
+      "title": "Transferring",
+      "navigatesTo": [
+        "ticket.detail",
         "tickets.list"
       ]
     },

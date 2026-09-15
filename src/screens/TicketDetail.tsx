@@ -1,5 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { TRANSFER_COPY } from "../copy/transfer.ts";
 import type { TicketDetail as Detail } from "../holdings/detail.ts";
+import { transferability } from "../transfer/transfer.ts";
 import { AssuranceLevel } from "./AssuranceLevel.tsx";
 import type { Router } from "./router.ts";
 import { Screen } from "./Screen.tsx";
@@ -14,6 +16,8 @@ export interface TicketDetailProps {
  * assurance level; and the way to its access pass (T-030-07).
  */
 export function TicketDetail({ detail, router }: TicketDetailProps) {
+  // AC-B3.3: a ticket that cannot be transferred says why, and offers no transfer.
+  const transfer = transferability({ cannotTransfer: !detail.transferable });
   const rows: [string, string][] = [
     ["Event", detail.event],
     ["Event status", detail.eventStatus],
@@ -50,6 +54,22 @@ export function TicketDetail({ detail, router }: TicketDetailProps) {
         >
           <Text style={styles.buttonText}>Show pass</Text>
         </Pressable>
+        {transfer.offered ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() =>
+              router.navigate("ticket.detail", "ticket.transfer", { ticket: detail.id })
+            }
+            style={styles.secondary}
+            testID="ticket-detail-transfer"
+          >
+            <Text style={styles.secondaryText}>{TRANSFER_COPY.action}</Text>
+          </Pressable>
+        ) : (
+          <Text style={styles.value} testID="ticket-detail-not-transferable">
+            {transfer.reason}
+          </Text>
+        )}
         <AssuranceLevel assurance={detail.assurance} />
       </ScrollView>
     </Screen>
@@ -71,4 +91,12 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  secondary: {
+    borderWidth: 1,
+    borderColor: "#111",
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  secondaryText: { color: "#111", fontSize: 16, fontWeight: "600" },
 });

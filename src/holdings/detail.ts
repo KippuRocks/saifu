@@ -19,6 +19,9 @@ export interface TicketDetail {
   readonly provenance: string;
   readonly policy: string;
   readonly restrictions: string;
+  /** Whether the ticket can be transferred (`AC-B3.3`), and the event it belongs to. */
+  readonly transferable: boolean;
+  readonly eventId: string;
   readonly attendances: string;
   /** `null` until the ledger's declaration is known. */
   readonly assurance: AssuranceLevel | null;
@@ -123,6 +126,8 @@ export function ticketDetail(
     provenance: provenanceText(ticket.provenance),
     policy: policyText(ticket.policy),
     restrictions: restrictionsText(ticket.restrictions),
+    transferable: !ticket.restrictions.cannotTransfer,
+    eventId: ticket.event,
     attendances: attendancesText(ticket.attendances),
     assurance: declaration === null ? null : assuranceLevel(declaration),
   };

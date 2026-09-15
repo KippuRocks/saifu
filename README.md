@@ -72,6 +72,15 @@ A ticket's pass is produced on the phone (`src/passes/`, T-030-07): `@ticketto/p
 
 A holder receives a ticket by showing their **receive code** (`src/receive/`, T-030-09). It is a QR code of the text `ticketto:account:<account id>`: the holder's account, and nothing that can use a ticket. The sender's Saifu scans it with `AccountScanner`, which reads only codes with that prefix. A ticket id or an event id is also 64 hex characters, and a ticket sent to one is lost, so a bare id is never accepted as a receiver.
 
+## Transferring a ticket
+
+Transfers (`src/transfer/`, T-030-08) are signed with the passkey, sponsored through Kippu's relay, and submitted directly to the ledger through the SDK. Kippu's APIs are not in the path (`REQ-CL-1`).
+
+- **Receiver.** It comes from a scanned receive code, or an account typed in. A typed id the ledger knows as a ticket or an event is refused, as is the holder's own account.
+- **Warning** (`REQ-FR-3`). A transfer to an account this Saifu has never sent a ticket to first shows a full-screen warning: no payment is involved, and it cannot be undone. Nothing is signed before the holder confirms. "Never sent to" is recorded per holder on the device. Kippu exposes no read of who sent a holder their tickets, so receiving from an account does not make it known.
+- **After submission.** Saifu waits for Kippu's copy (`derived.waitFor`) and refreshes the holdings before saying the ticket is gone. The relay is given the copy's cursor from the last holdings read, so a lagging relay waits instead of refusing.
+- **Restricted tickets** (`AC-B3.3`). A ticket that cannot be transferred says why, and offers no transfer.
+
 ## Screens
 
 Every screen renders inside `<Screen id>` (`src/screens/Screen.tsx`): its
