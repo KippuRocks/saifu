@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
-import { INVITATION_COPY, SESSION_ENDED } from "../copy/links.ts";
+import { INVITATION_COPY, INVITATION_REFUSAL_COPY, SESSION_ENDED } from "../copy/links.ts";
 import type { InvitationOutcome } from "../handoff/invitation.ts";
 import type { Router } from "./router.ts";
 import { Screen } from "./Screen.tsx";
@@ -55,7 +55,7 @@ export function InvitationRedeem({
         ? INVITATION_COPY.waiting
         : outcome.failure === "session"
           ? SESSION_ENDED
-          : INVITATION_COPY[outcome.failure];
+          : INVITATION_REFUSAL_COPY[outcome.failure];
 
   return (
     <Screen busy={outcome === null} id="invitation.redeem">
