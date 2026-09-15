@@ -1,6 +1,6 @@
-// Saifu's client for Kippu's APIs: tRPC over HTTP, typed by `@kippu/api` (C5).
+// Saifu's client for Kippu's APIs: tRPC over HTTP, typed by `@kippurocks/api` (C5).
 
-import type { AppRouter } from "@kippu/api";
+import type { AppRouter } from "@kippurocks/api";
 import { createTRPCClient, type HTTPLinkOptions, httpLink, type TRPCClient } from "@trpc/client";
 
 export type KippuClient = TRPCClient<AppRouter>;

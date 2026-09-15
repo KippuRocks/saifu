@@ -1,14 +1,14 @@
 {
   "repository": "https://github.com/KippuRocks/kippu-api.git",
-  "commit": "f4d4532b06d92fb1cdbfc5e48dd3bfffa6ebeffa",
+  "commit": "871790625a71877d3a0f07424780f21221be36f8",
   "packages": [
     {
-      "file": "kippu-api-0.0.0.tgz",
-      "sha256": "890368a74c50a0524ea695dc12f9ba163fcd06b1d1b554d22efb73808c82d9a9"
+      "file": "kippurocks-api-0.0.0.tgz",
+      "sha256": "bed83d0eb17b77155fcbca975ff1c2315301caa87eb6f04221be6e0d975dcf40"
     },
     {
-      "file": "kippu-sponsorship-0.0.0.tgz",
-      "sha256": "0da1977d7cf2c44bb49f06dc66f8cb0b0ceb57b1f774e3dea4cff6f25eeececa"
+      "file": "kippurocks-sponsorship-0.0.0.tgz",
+      "sha256": "7d9ac0fa89a0c9f00961c3047fc2e622cac89392fc81df982400734baad0d685"
     }
   ]
 }

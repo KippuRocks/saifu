@@ -248,7 +248,7 @@ Saifu is the only client holding a holder's credential (`REQ-CL-2`).
   the platform authenticator.
 - **Registration** (`src/holder/register.ts`) is `register_credential` through the
   Ticketto SDK over `binding-offchain`, sponsored through Kippu's relay
-  (`@kippu/sponsorship`). A repeated registration is accepted unchanged, so an
+  (`@kippurocks/sponsorship`). A repeated registration is accepted unchanged, so an
   interrupted one is resubmitted.
 - **Linking** (`src/kippu/link.ts`) answers kippu-api's proof-of-control challenge
   (`auth.holder.beginLink` / `completeLink`) with `signProofOfControl`.
@@ -281,5 +281,5 @@ pinned commits, checked by `pnpm vendor:check` in CI:
 - `@ticketto/sdk`, `profile-v0` and `binding-offchain` — and `backend-memory`,
   `ledger-rules` and `log` for tests — from `libticketto`
   (`pnpm vendor:libticketto <commit>`);
-- `@kippu/api` (router types, `C5`) and `@kippu/sponsorship` (the relay client)
+- `@kippurocks/api` (router types, `C5`) and `@kippurocks/sponsorship` (the relay client)
   from `kippu-api` (`pnpm vendor:kippu-api <commit>`).

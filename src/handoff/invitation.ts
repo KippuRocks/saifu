@@ -5,7 +5,7 @@
 // class's ticket to the holder's account, and Saifu waits for its derived copy to
 // reflect the issuance (`derived.waitFor`) before showing the ticket.
 
-import type { AppRouter, InvitationRefusal } from "@kippu/api";
+import type { AppRouter, InvitationRefusal } from "@kippurocks/api";
 import type { inferRouterOutputs } from "@trpc/server";
 import { refusalOf } from "../kippu/errors.ts";
 
