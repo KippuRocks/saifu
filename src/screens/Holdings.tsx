@@ -1,18 +1,51 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { type LedgerHolding, provenanceTitle } from "../holdings/degraded.ts";
 import { className, eventName, formatDate, placeText } from "../holdings/detail.ts";
 import type { LoadedHoldings } from "../holdings/load.ts";
 import type { HoldingView } from "../holdings/types.ts";
 
+export type OpenedHolding =
+  | { readonly from: "kippu"; readonly holding: HoldingView }
+  | { readonly from: "ledger"; readonly holding: LedgerHolding };
+
+interface Card {
+  readonly id: string;
+  readonly title: string;
+  readonly event: string;
+  readonly place: string;
+  readonly opened: OpenedHolding;
+}
+
+function cards(loaded: LoadedHoldings | null): Card[] {
+  if (loaded === null || loaded.source === "none") return [];
+  if (loaded.source === "ledger") {
+    return loaded.tickets.map((holding) => ({
+      id: holding.ticket.id,
+      title: provenanceTitle(holding.ticket.provenance),
+      event: eventName(null, holding.ticket.event),
+      place: placeText(holding.ticket.placement),
+      opened: { from: "ledger", holding },
+    }));
+  }
+  return loaded.entry.read.holdings.map((holding) => ({
+    id: holding.ticket.id,
+    title: className(holding.ticket) ?? "Ticket",
+    event: eventName(holding.event, holding.ticket.event),
+    place: placeText(holding.ticket.placement),
+    opened: { from: "kippu", holding },
+  }));
+}
+
 export interface HoldingsProps {
   readonly loaded: LoadedHoldings | null;
-  readonly onOpen: (holding: HoldingView) => void;
+  readonly onOpen: (opened: OpenedHolding) => void;
   readonly onRefresh: () => void;
   readonly onSettings: () => void;
 }
 
 /** The holder's tickets (T-030-05), from Kippu's copy or the device cache. */
 export function Holdings({ loaded, onOpen, onRefresh, onSettings }: HoldingsProps) {
-  const holdings = loaded === null || loaded.source === "none" ? [] : loaded.entry.read.holdings;
+  const holdings = cards(loaded);
   return (
     <ScrollView contentContainerStyle={styles.page} testID="holdings">
       <View style={styles.header}>
@@ -23,6 +56,12 @@ export function Holdings({ loaded, onOpen, onRefresh, onSettings }: HoldingsProp
       </View>
       <Text style={styles.heading}>Your tickets</Text>
       {loaded === null ? <Text style={styles.note}>Loading…</Text> : null}
+      {loaded?.source === "ledger" ? (
+        <Text style={styles.note} testID="holdings-ledger">
+          Kippu cannot be reached. These tickets are read from the ledger, so only what the ledger
+          records is shown.
+        </Text>
+      ) : null}
       {loaded?.source === "cache" ? (
         <Text style={styles.note} testID="holdings-cached">
           Kippu cannot be reached. Showing your tickets as of {formatDate(loaded.entry.savedAt)}.
@@ -36,17 +75,17 @@ export function Holdings({ loaded, onOpen, onRefresh, onSettings }: HoldingsProp
       {loaded !== null && loaded.source !== "none" && holdings.length === 0 ? (
         <Text style={styles.note}>You hold no tickets yet.</Text>
       ) : null}
-      {holdings.map((holding) => (
+      {holdings.map((card) => (
         <Pressable
           accessibilityRole="button"
-          key={holding.ticket.id}
-          onPress={() => onOpen(holding)}
+          key={card.id}
+          onPress={() => onOpen(card.opened)}
           style={styles.card}
-          testID={`holding-${holding.ticket.id}`}
+          testID={`holding-${card.id}`}
         >
-          <Text style={styles.cardTitle}>{className(holding.ticket) ?? "Ticket"}</Text>
-          <Text style={styles.cardLine}>{eventName(holding.event, holding.ticket.event)}</Text>
-          <Text style={styles.cardLine}>{placeText(holding.ticket.placement)}</Text>
+          <Text style={styles.cardTitle}>{card.title}</Text>
+          <Text style={styles.cardLine}>{card.event}</Text>
+          <Text style={styles.cardLine}>{card.place}</Text>
         </Pressable>
       ))}
       <Pressable accessibilityRole="button" onPress={onRefresh} testID="holdings-refresh">

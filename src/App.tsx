@@ -4,11 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { type HolderPhase, phaseFor } from "./app/holder-state.ts";
 import { holderServices } from "./app/services.ts";
+import { ledgerTicketDetail } from "./holdings/degraded.ts";
 import { ticketDetail } from "./holdings/detail.ts";
 import type { LoadedHoldings } from "./holdings/load.ts";
-import type { HoldingView } from "./holdings/types.ts";
 import { passkeysAvailable } from "./passkey/install.ts";
-import { Holdings } from "./screens/Holdings.tsx";
+import { Holdings, type OpenedHolding } from "./screens/Holdings.tsx";
 import { Onboarding } from "./screens/Onboarding.tsx";
 import { Settings } from "./screens/Settings.tsx";
 import { TicketDetail } from "./screens/TicketDetail.tsx";
@@ -19,7 +19,7 @@ export function App() {
   const [phase, setPhase] = useState<HolderPhase>({ kind: "loading" });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [loaded, setLoaded] = useState<LoadedHoldings | null>(null);
-  const [open, setOpen] = useState<HoldingView | null>(null);
+  const [open, setOpen] = useState<OpenedHolding | null>(null);
 
   const refresh = useCallback(async () => {
     const record = await services.store.load();
@@ -43,6 +43,7 @@ export function App() {
   }, [services, refresh]);
 
   const account = phase.kind === "ready" ? phase.account : null;
+  const assurance = loaded !== null && loaded.source !== "none" ? loaded.entry.assurance : null;
   const reload = useCallback(async () => {
     if (account === null) return;
     setLoaded(await services.loadHoldings(account));
@@ -64,10 +65,11 @@ export function App() {
           <Settings account={phase.account} onClose={() => setSettingsOpen(false)} />
         ) : open !== null ? (
           <TicketDetail
-            detail={ticketDetail(
-              open,
-              loaded !== null && loaded.source !== "none" ? loaded.entry.assurance : null,
-            )}
+            detail={
+              open.from === "ledger"
+                ? ledgerTicketDetail(open.holding, assurance)
+                : ticketDetail(open.holding, assurance)
+            }
             onClose={() => setOpen(null)}
           />
         ) : (
