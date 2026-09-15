@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "57.0.15",
-    "@kippu/sponsorship": "file:vendor/kippu-api/kippu-sponsorship-0.0.0.tgz",
+    "@kippurocks/sponsorship": "file:vendor/kippu-api/kippurocks-sponsorship-0.0.0.tgz",
     "@noble/hashes": "2.4.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@ticketto/binding-offchain": "file:vendor/libticketto/ticketto-binding-offchain-0.0.0.tgz",
@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
-    "@kippu/api": "file:vendor/kippu-api/kippu-api-0.0.0.tgz",
+    "@kippurocks/api": "file:vendor/kippu-api/kippurocks-api-0.0.0.tgz",
     "@noble/curves": "2.4.0",
     "@playwright/test": "1.63.0",
     "@ticketto/backend-memory": "file:vendor/libticketto/ticketto-backend-memory-0.0.0.tgz",

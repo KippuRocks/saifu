@@ -19,9 +19,9 @@ importers:
       '@expo/metro-runtime':
         specifier: 57.0.15
         version: 57.0.15(@expo/log-box@57.0.4)(expo@57.0.23)(react-dom@19.2.3(react@19.2.3))(react-native@0.86.3(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
-      '@kippu/sponsorship':
-        specifier: file:vendor/kippu-api/kippu-sponsorship-0.0.0.tgz
-        version: file:vendor/kippu-api/kippu-sponsorship-0.0.0.tgz(@ticketto/profile-v0@file:vendor/libticketto/ticketto-profile-v0-0.0.0.tgz)(@ticketto/sdk@file:vendor/libticketto/ticketto-sdk-0.0.0.tgz)
+      '@kippurocks/sponsorship':
+        specifier: file:vendor/kippu-api/kippurocks-sponsorship-0.0.0.tgz
+        version: file:vendor/kippu-api/kippurocks-sponsorship-0.0.0.tgz(@ticketto/profile-v0@file:vendor/libticketto/ticketto-profile-v0-0.0.0.tgz)(@ticketto/sdk@file:vendor/libticketto/ticketto-sdk-0.0.0.tgz)
       '@noble/hashes':
         specifier: 2.4.0
         version: 2.4.0
@@ -98,9 +98,9 @@ importers:
       '@biomejs/biome':
         specifier: 2.5.13
         version: 2.5.13
-      '@kippu/api':
-        specifier: file:vendor/kippu-api/kippu-api-0.0.0.tgz
-        version: file:vendor/kippu-api/kippu-api-0.0.0.tgz(@trpc/server@11.18.0(typescript@7.0.2))
+      '@kippurocks/api':
+        specifier: file:vendor/kippu-api/kippurocks-api-0.0.0.tgz
+        version: file:vendor/kippu-api/kippurocks-api-0.0.0.tgz(@trpc/server@11.18.0(typescript@7.0.2))
       '@noble/curves':
         specifier: 2.4.0
         version: 2.4.0
@@ -902,15 +902,15 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@kippu/api@file:vendor/kippu-api/kippu-api-0.0.0.tgz':
-    resolution: {integrity: sha512-5cf4ijWeD8jdLQfAPXIevSf4cT5LHGkXF8AaK0SkIvUTX2FAmU9v8TH9ecqqFHRWEXq8pjWOS+0x9FPSYd6tpQ==, tarball: file:vendor/kippu-api/kippu-api-0.0.0.tgz}
+  '@kippurocks/api@file:vendor/kippu-api/kippurocks-api-0.0.0.tgz':
+    resolution: {integrity: sha512-OGnkqR0YU6WJT0ranbGze+wCPkSp+SBTVn33+WOgO3Y+vF39Q859zkn0N30LOHsaiPPzhz/wasJFBixY78uaAg==, tarball: file:vendor/kippu-api/kippurocks-api-0.0.0.tgz}
     version: 0.0.0
     engines: {node: '>=24'}
     peerDependencies:
       '@trpc/server': ^11.18.0
 
-  '@kippu/sponsorship@file:vendor/kippu-api/kippu-sponsorship-0.0.0.tgz':
-    resolution: {integrity: sha512-/5KN7twZqsOPNl7cWPZM5bJjBBHUHInPyyo8pSTpLC1Oy5K8o2biw+xFaXndjoshKnsasi+Xz2rkkwabXL27Eg==, tarball: file:vendor/kippu-api/kippu-sponsorship-0.0.0.tgz}
+  '@kippurocks/sponsorship@file:vendor/kippu-api/kippurocks-sponsorship-0.0.0.tgz':
+    resolution: {integrity: sha512-+0k1Kw9ZglNmYLKiDCVx4EEFG3hTtDsgOInni4ZrbCvNfzb/XuL341HPb21Itzx/dSLGvBlmkfv3hAznq3QLyg==, tarball: file:vendor/kippu-api/kippurocks-sponsorship-0.0.0.tgz}
     version: 0.0.0
     engines: {node: '>=24'}
     peerDependencies:
@@ -4913,11 +4913,11 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  '@kippu/api@file:vendor/kippu-api/kippu-api-0.0.0.tgz(@trpc/server@11.18.0(typescript@7.0.2))':
+  '@kippurocks/api@file:vendor/kippu-api/kippurocks-api-0.0.0.tgz(@trpc/server@11.18.0(typescript@7.0.2))':
     dependencies:
       '@trpc/server': 11.18.0(typescript@7.0.2)
 
-  '@kippu/sponsorship@file:vendor/kippu-api/kippu-sponsorship-0.0.0.tgz(@ticketto/profile-v0@file:vendor/libticketto/ticketto-profile-v0-0.0.0.tgz)(@ticketto/sdk@file:vendor/libticketto/ticketto-sdk-0.0.0.tgz)':
+  '@kippurocks/sponsorship@file:vendor/kippu-api/kippurocks-sponsorship-0.0.0.tgz(@ticketto/profile-v0@file:vendor/libticketto/ticketto-profile-v0-0.0.0.tgz)(@ticketto/sdk@file:vendor/libticketto/ticketto-sdk-0.0.0.tgz)':
     dependencies:
       '@noble/curves': 2.4.0
       '@noble/hashes': 2.4.0

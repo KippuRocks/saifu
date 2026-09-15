@@ -3,8 +3,8 @@
 // software p256 key. The real relay decides entitlements from ledger facts;
 // `backend-memory` verifies no sponsorship, so nothing here needs to.
 
-import { issueSponsorship, kmsP256Signer } from "@kippu/sponsorship";
-import { softwareKmsP256Key } from "@kippu/sponsorship/testing";
+import { issueSponsorship, kmsP256Signer } from "@kippurocks/sponsorship";
+import { softwareKmsP256Key } from "@kippurocks/sponsorship/testing";
 import { decodeSignedAccessPass, decodeSignedCommand } from "@ticketto/profile-v0";
 import { fromHex, toHex } from "../../../src/holder/credential.ts";
 import { json, type StandIn } from "./http.ts";

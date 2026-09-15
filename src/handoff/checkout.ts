@@ -7,7 +7,7 @@
 // Saifu confirms nothing. What is being bought is shown beside the code, best
 // effort, from public reads.
 
-import type { AppRouter } from "@kippu/api";
+import type { AppRouter } from "@kippurocks/api";
 import type { inferRouterOutputs } from "@trpc/server";
 import { seatText } from "../holdings/detail.ts";
 import { refusalOf } from "../kippu/errors.ts";

@@ -2,8 +2,8 @@
 // backend, sponsored by a local software sponsor (backend-memory verifies no
 // sponsorship). The code under test is Saifu's own SDK factory.
 
-import { issueSponsorship, kmsP256Signer } from "@kippu/sponsorship";
-import { softwareKmsP256Key } from "@kippu/sponsorship/testing";
+import { issueSponsorship, kmsP256Signer } from "@kippurocks/sponsorship";
+import { softwareKmsP256Key } from "@kippurocks/sponsorship/testing";
 import { createMemoryBackend } from "@ticketto/backend-memory";
 import { createProfileV0 } from "@ticketto/profile-v0";
 import type { Sponsor, Ticketto } from "@ticketto/sdk";

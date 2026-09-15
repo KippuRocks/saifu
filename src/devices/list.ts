@@ -2,7 +2,7 @@
 // REQ-CP-6), from kippu-api's holder read of the account's credentials
 // (T-025-13). A holder can see a device they did not add; V0 cannot remove one.
 
-import type { AppRouter } from "@kippu/api";
+import type { AppRouter } from "@kippurocks/api";
 import type { inferRouterOutputs } from "@trpc/server";
 
 export type HolderCredentialsRead = inferRouterOutputs<AppRouter>["derived"]["credentials"]["mine"];
