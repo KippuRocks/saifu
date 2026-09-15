@@ -77,7 +77,8 @@ jobs:
 
   # T-030-18: Saifu Web — the same app from Expo's web target, exported, then driven
   # in Chromium with a virtual authenticator: it onboards, registers and shows the
-  # checkout pairing code. The page runs at its own origin, saifu.kippu.rocks, and
+  # checkout pairing code, and after one visit produces a pass with the network off
+  # (T-030-19). The page runs at its own origin, saifu.kippu.rocks, and
   # every service it calls is a local stand-in answered through request
   # interception (test/web/stack.ts): nothing is deployed and no DNS is involved.
   web:

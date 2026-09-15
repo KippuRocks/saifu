@@ -11,6 +11,10 @@ export interface OnboardingProps {
   readonly passkeysAvailable: boolean;
   readonly onSetUp: () => void;
   readonly router: Router;
+  /** Restores the holder from a synced passkey, where Saifu offers it (T-030-19). */
+  readonly onRestore?: () => void;
+  /** Why the last restore failed. */
+  readonly restoreFailure?: keyof typeof ONBOARDING_COPY.restoreFailed | null;
   /** Why setup is needed now: a link into Saifu is waiting for it. */
   readonly pendingNotice?: string | null;
 }
@@ -25,6 +29,8 @@ export function Onboarding({
   passkeysAvailable,
   onSetUp,
   router,
+  onRestore,
+  restoreFailure = null,
   pendingNotice = null,
 }: OnboardingProps) {
   return (
@@ -65,6 +71,21 @@ export function Onboarding({
           >
             <Text style={styles.link}>{DEVICES_COPY.joinOffer}</Text>
           </Pressable>
+          {ONBOARDING_COPY.restoreOffer === null || onRestore === undefined ? null : (
+            <Pressable
+              accessibilityRole="button"
+              disabled={busy || !passkeysAvailable}
+              onPress={onRestore}
+              testID="onboarding-restore"
+            >
+              <Text style={styles.link}>{ONBOARDING_COPY.restoreOffer}</Text>
+            </Pressable>
+          )}
+          {restoreFailure === null ? null : (
+            <Text style={styles.notice} testID="onboarding-restore-failed">
+              {ONBOARDING_COPY.restoreFailed[restoreFailure]}
+            </Text>
+          )}
         </View>
       </ScrollView>
     </Screen>

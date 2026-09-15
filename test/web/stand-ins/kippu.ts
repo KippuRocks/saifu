@@ -134,6 +134,8 @@ export function kippuStandIn(ledger: Ticketto, holderRpId: string) {
     setHoldings(read: (account: string) => Promise<HoldingsRead>) {
       holdings = read;
     },
+    /** Every account a holder session was issued for, once per link. */
+    linkedAccounts: () => [...sessions.values()],
     /** The account a handoff token was linked to, if any. */
     linkedAccount: (handoffToken: string) => checkouts.get(handoffToken)?.account ?? null,
   };

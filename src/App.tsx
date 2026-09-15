@@ -1,12 +1,13 @@
 import { holderAccountFromHashedUserId } from "@ticketto/profile-v0";
 import type { AccountId } from "@ticketto/sdk";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { type HolderPhase, phaseFor } from "./app/holder-state.ts";
 import { holderServices } from "./app/services.ts";
 import { PENDING_LINK_COPY } from "./copy/links.ts";
 import type { AddDeviceFlow, AddDeviceStep } from "./devices/add.ts";
+import type { RestoreOutcome } from "./holder/credential.ts";
 import { fromHex } from "./holder/credential.ts";
 import { ledgerTicketDetail } from "./holdings/degraded.ts";
 import { ticketDetail } from "./holdings/detail.ts";
@@ -15,6 +16,7 @@ import type { SaifuLink } from "./links/links.ts";
 import { produceTicketPass } from "./passes/produce.ts";
 import { passWindowFor } from "./passes/window.ts";
 import { passkeysAvailable } from "./passkey/install";
+import { onReconnect } from "./platform/network";
 import { CheckoutLink } from "./screens/CheckoutLink.tsx";
 import { DeviceAdd } from "./screens/DeviceAdd.tsx";
 import { DeviceAddConfirm } from "./screens/DeviceAddConfirm.tsx";
@@ -150,11 +152,32 @@ export function App() {
     else navigate("device.join", "holder.onboarding", {});
   }, [services, refresh, navigate]);
 
+  // Restoring from a synced passkey (T-030-19): why the last attempt failed.
+  const [restoreFailure, setRestoreFailure] = useState<
+    Exclude<RestoreOutcome, { ok: true }>["failure"] | null
+  >(null);
+  const restore = useCallback(async () => {
+    setPhase({ kind: "provisioning" });
+    setRestoreFailure(null);
+    const restored = await services
+      .restore()
+      .catch((): RestoreOutcome => ({ ok: false, failure: "unavailable" }));
+    if (!restored.ok) setRestoreFailure(restored.failure);
+    await refresh().catch(() => setPhase({ kind: "onboarding", failed: false }));
+  }, [services, refresh]);
+
   const account = phase.kind === "ready" ? phase.account : null;
   const assurance = loaded !== null && loaded.source !== "none" ? loaded.entry.assurance : null;
+  // Only the latest load may update what is shown: a slow ledger read of an
+  // earlier one never replaces a newer answer.
+  const loads = useRef(0);
   const reload = useCallback(async () => {
     if (account === null) return;
-    setLoaded(await services.loadHoldings(account));
+    const load = ++loads.current;
+    const current = (next: LoadedHoldings) => {
+      if (load === loads.current) setLoaded(next);
+    };
+    current(await services.loadHoldings(account, current));
   }, [services, account]);
   const linkCheckout = useCallback((token: string) => services.linkCheckout(token), [services]);
   const redeem = useCallback((token: string) => services.redeemInvitation(token), [services]);
@@ -162,6 +185,15 @@ export function App() {
   useEffect(() => {
     reload().catch(() => setLoaded({ source: "none", error: null }));
   }, [reload]);
+
+  // Back online: read Kippu's copy again.
+  useEffect(
+    () =>
+      onReconnect(() => {
+        reload().catch(() => {});
+      }),
+    [reload],
+  );
 
   const opened = useMemo(
     () => openedHolding(loaded, router.location.params.ticket),
@@ -251,8 +283,10 @@ export function App() {
           busy={phase.kind === "provisioning"}
           failed={phase.kind === "onboarding" && phase.failed}
           passkeysAvailable={passkeysAvailable}
+          onRestore={restore}
           onSetUp={setUp}
           router={router}
+          restoreFailure={restoreFailure}
           pendingNotice={pending === null ? null : PENDING_LINK_COPY[pending.kind]}
         />
       ) : screen === "checkout.link" && router.location.params.handoffToken !== undefined ? (

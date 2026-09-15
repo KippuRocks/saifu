@@ -10,14 +10,21 @@ import { registrationFromDeviceCode, shortCode } from "../devices/codes.ts";
 import { type DeviceRow, listDevices } from "../devices/list.ts";
 import { type HandoffOutcome, linkCheckoutHandoff } from "../handoff/checkout.ts";
 import { type InvitationOutcome, redeemInvitation } from "../handoff/invitation.ts";
-import { fromHex, type HolderCredential, holderCredential } from "../holder/credential.ts";
+import {
+  fromHex,
+  type HolderCredential,
+  holderCredential,
+  type RestoreOutcome,
+  restoreHolderCredential,
+} from "../holder/credential.ts";
 import { registerHolderCredential, waitForJoinedRegistration } from "../holder/register.ts";
 import { type HolderStore, secureHolderStore } from "../holder/store.ts";
 import { type HoldingsCache, holdingsCache } from "../holdings/cache.ts";
-import { type LoadedHoldings, loadHoldings } from "../holdings/load.ts";
+import { type LoadedHoldings, loadHoldingsProgressively } from "../holdings/load.ts";
 import { type KippuClient, kippuClient } from "../kippu/client.ts";
 import { linkHolder } from "../kippu/link.ts";
 import { connectLedger } from "../ledger/ticketto.ts";
+import { isOffline } from "../platform/network";
 import { secureStorage } from "../platform/secure-storage";
 import { exchangedAccounts } from "../transfer/exchanged.ts";
 import { checkReceiver, type ReceiverCheck } from "../transfer/receiver.ts";
@@ -74,8 +81,20 @@ export interface HolderServices {
   ledger(): Promise<Result<Ticketto>>;
   kippu(): Promise<KippuClient>;
   readonly holdings: HoldingsCache;
-  /** The linked holder's tickets: Kippu's copy, else the device cache. */
-  loadHoldings(account: string): Promise<LoadedHoldings>;
+  /**
+   * The linked holder's tickets: Kippu's copy, else at once the device cache —
+   * then, through `onUpdate`, the cached tickets as the ledger reads them, once
+   * it connects.
+   */
+  loadHoldings(
+    account: string,
+    onUpdate?: (loaded: LoadedHoldings) => void,
+  ): Promise<LoadedHoldings>;
+  /**
+   * Restores the holder from a synced passkey (T-030-19), then links the account
+   * to Kippu; a failure other than the link's is answered, not thrown.
+   */
+  restore(): Promise<RestoreOutcome>;
   /** Registers the credential on the ledger if needed, then links it to Kippu. */
   provisionAndLink(): Promise<Result<HolderCredential>>;
   /**
@@ -132,22 +151,32 @@ export function holderServices(config: BuildConfig = buildConfig()): HolderServi
     return kippuClient({ url: config.kippuApiUrl, token: () => record?.kippuSession?.token });
   };
   const cache = holdingsCache(AsyncStorage);
-  return {
+  const services: HolderServices = {
     config,
     store,
     credential,
     ledger,
     kippu,
     holdings: cache,
-    async loadHoldings(account) {
-      const [client, connected] = await Promise.all([kippu(), ledger().catch(() => null)]);
-      return loadHoldings({
-        kippu: client,
+    async loadHoldings(account, onUpdate = () => {}) {
+      const connected = ledger()
+        .then((result) => (result.ok ? result.value : null))
+        .catch(() => null);
+      return loadHoldingsProgressively({
+        kippu: await kippu(),
         cache,
         account,
-        assurance: connected?.ok ? connected.value.assurance() : null,
-        ledger: connected?.ok ? connected.value : null,
+        ledger: connected,
+        offline: isOffline(),
+        onUpdate,
       });
+    },
+    async restore() {
+      const restored = await restoreHolderCredential({ rpId: config.rpId, store, ledger });
+      if (!restored.ok) return restored;
+      const linked = await services.provisionAndLink();
+      if (!linked.ok) return { ok: false, failure: "unavailable" };
+      return restored;
     },
     async provisionAndLink() {
       const holder = await credential();
@@ -243,4 +272,5 @@ export function holderServices(config: BuildConfig = buildConfig()): HolderServi
       return redeemInvitation(await kippu(), token);
     },
   };
+  return services;
 }

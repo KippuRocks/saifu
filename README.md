@@ -182,16 +182,43 @@ Everything else — the recovery disclosure, the `REQ-FR-3` warning, passes
 produced with no network, the event's pass window, the copy lint and the screen
 manifest — is the same code on both.
 
+**Offline** (T-030-19; `NFR-3`, `REQ-AP-5`). `pnpm web:build` writes a service
+worker into the export, `dist/sw.js` (`tools/web/service-worker.ts`), registered
+by `src/platform/offline.web.ts`. On the first visit it caches every file of the
+export, under a cache named for their contents; page loads ask the network first
+and fall back to the cached app, so any path opens offline; nothing from another
+origin is cached. The holder's tickets come from the app's own device cache, as
+natively, and the holder record from IndexedDB, so after one online visit Saifu
+Web opens and produces access passes with no network.
+
+**Holdings without a network** (on both platforms, `loadHoldingsProgressively`
+in `src/holdings/load.ts`). When the device reports it is offline
+(`navigator.onLine` on the web, `src/platform/network`), or Kippu's copy does not
+answer, the cached tickets are shown at once; the ledger keeps connecting in the
+background, and once it does the cached tickets are read from it. On the web,
+coming back online reads Kippu's copy again.
+
 A host serving `dist/` must answer `/checkout` and `/invitations` with
-`index.html`. Browsers may evict a site's storage (notably Safari, for a site not
+`index.html`, and serve `sw.js` without long-lived HTTP caching. Browsers may evict a site's storage (notably Safari, for a site not
 added to the home screen); the holder record is then gone from that browser.
+
+**Restore** (T-030-19; §5.1a). Onboarding on the web offers to sign in with an
+existing passkey (`restoreHolderCredential`): the browser offers any
+discoverable Saifu passkey it has, synced or not, and the assertion's user
+handle names the account. The registration is read back from the ledger — a
+passkey with none is refused — and the account is linked to Kippu again. No
+passkey is created. The web disclosure then says a synced passkey signs the
+holder in again, and promises no sync. Natively this is T-030-16's.
 
 **Smoke test.** `test/web/smoke.spec.ts` drives `dist/` in Chromium, desktop and
 mobile, with Chromium's virtual authenticator standing in for the platform
 authenticator: an Ichiba checkout link opens onboarding, the holder sets up —
 one discoverable passkey bound to `saifu.kippu.rocks`, registered on the ledger
 and linked to Kippu — and the pairing code appears; a reload resumes from
-IndexedDB with no second passkey. The page really runs at
+IndexedDB with no second passkey. `test/web/offline.spec.ts` visits once, turns
+the network off, reloads, and checks the pass on screen verifies against the
+credential the ledger records; then it clears the origin's storage and restores
+the same account with the same passkey. The page really runs at
 `https://saifu.kippu.rocks`: Playwright intercepts every request to that origin
 and to the service endpoints and answers it locally (`test/web/stack.ts`) — the
 export as a static host would serve it, a stand-in for the ledger service over

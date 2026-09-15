@@ -11,16 +11,25 @@ import {
   type Assertion,
   type Attestation,
   assertionCodec,
+  deviceId,
   encodeAuthorisation,
   encodeRegistration,
   hashedUserId,
   holderAccountFromHashedUserId,
   V0_CONTEXT,
 } from "@ticketto/profile-v0";
-import type { AccountId, Authorisation, Registration, Signer } from "@ticketto/sdk";
+import type {
+  AccountId,
+  Authorisation,
+  CredentialId,
+  Registration,
+  Result,
+  Signer,
+  Ticketto,
+} from "@ticketto/sdk";
 import type { CredentialsHandler } from "@virtonetwork/authenticators-webauthn";
 import { WebAuthn } from "@virtonetwork/authenticators-webauthn";
-import { fromBase64Url, toBase64Url } from "../passkey/bytes.ts";
+import { bufferSourceBytes, fromBase64Url, toBase64Url } from "../passkey/bytes.ts";
 import { SaifuCredentialsHandler } from "../passkey/credentials-handler.ts";
 import { v0Challenger } from "./challenger.ts";
 import type { HolderRecord, HolderStore } from "./store.ts";
@@ -203,4 +212,73 @@ async function credentialFrom(
     registration: fromHex(record.registration) as Registration,
     record,
   };
+}
+
+export type RestoreOutcome =
+  | { readonly ok: true; readonly credential: HolderCredential }
+  | {
+      readonly ok: false;
+      readonly failure: /** The holder dismissed the passkey prompt, or no passkey was offered. */
+        | "cancelled"
+        /** The passkey has no account registered on the ledger. */
+        | "not-registered"
+        /** The ledger could not be read. */
+        | "unavailable";
+    };
+
+export interface RestoreOptions extends Omit<HolderCredentialOptions, "joinUserHandle"> {
+  /** The ledger, where the passkey's registration is read back. */
+  readonly ledger: () => Promise<Result<Pick<Ticketto, "getCredential">>>;
+}
+
+/**
+ * Restores the holder from a synced, discoverable passkey (T-030-19;
+ * features/030-saifu/plan.md §5.1a): the platform offers any Saifu passkey it
+ * has, and the assertion's user handle — `SHA-256(userId)`, Saifu's durable
+ * identity — names the account. The registration comes back from the ledger,
+ * which records it, so the device holds what provisioning would have left there,
+ * and no passkey is created.
+ *
+ * The assertion is over a random challenge and is discarded: it proves nothing
+ * to anyone. Kippu learns of the holder only when the account is linked, with a
+ * proof of control signed afterwards.
+ */
+export async function restoreHolderCredential(options: RestoreOptions): Promise<RestoreOutcome> {
+  let assertion: PublicKeyCredential | null;
+  try {
+    assertion = (await navigator.credentials.get({
+      publicKey: {
+        challenge: (options.randomBytes ?? defaultRandomBytes)(32).slice().buffer as ArrayBuffer,
+        rpId: options.rpId,
+        allowCredentials: [],
+        userVerification: "required",
+        timeout: 60_000,
+      },
+    })) as PublicKeyCredential | null;
+  } catch {
+    return { ok: false, failure: "cancelled" };
+  }
+  if (assertion === null) return { ok: false, failure: "cancelled" };
+  const { userHandle } = assertion.response as AuthenticatorAssertionResponse;
+  const handle = userHandle === null ? null : bufferSourceBytes(userHandle);
+  if (handle === null || handle.length !== 32) return { ok: false, failure: "not-registered" };
+
+  const rawId = bufferSourceBytes(assertion.rawId);
+  const account = holderAccountFromHashedUserId(handle);
+  const connected = await options.ledger().catch(() => null);
+  if (connected === null || !connected.ok) return { ok: false, failure: "unavailable" };
+  const registered = await connected.value
+    .getCredential(account, toHex(deviceId(rawId)) as CredentialId)
+    .catch(() => null);
+  if (registered === null || !registered.ok) return { ok: false, failure: "unavailable" };
+  if (registered.value === null) return { ok: false, failure: "not-registered" };
+
+  const record: HolderRecord = {
+    userHandle: toHex(handle),
+    credentialIds: [toBase64Url(rawId)],
+    registration: toHex(registered.value),
+    registered: true,
+  };
+  await options.store.save(record);
+  return { ok: true, credential: await credentialFrom(record, options) };
 }
