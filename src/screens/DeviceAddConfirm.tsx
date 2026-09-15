@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { DEVICES_COPY } from "../copy/devices.ts";
+import { DEVICES_COPY } from "../copy/devices";
 import type { AddDeviceStep } from "../devices/add.ts";
 import { Screen } from "./Screen.tsx";
 
