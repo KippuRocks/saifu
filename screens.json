@@ -36,7 +36,16 @@
       "route": null,
       "title": "Ticket",
       "navigatesTo": [
+        "ticket.pass",
         "tickets.list"
+      ]
+    },
+    {
+      "screenId": "ticket.pass",
+      "route": null,
+      "title": "Access pass",
+      "navigatesTo": [
+        "ticket.detail"
       ]
     },
     {

@@ -9,6 +9,7 @@ import { ledgerTicketDetail } from "./holdings/degraded.ts";
 import { ticketDetail } from "./holdings/detail.ts";
 import type { LoadedHoldings } from "./holdings/load.ts";
 import type { SaifuLink } from "./links/links.ts";
+import { produceTicketPass } from "./passes/produce.ts";
 import { passkeysAvailable } from "./passkey/install.ts";
 import { CheckoutLink } from "./screens/CheckoutLink.tsx";
 import { useIncomingLinks } from "./screens/deep-links.ts";
@@ -19,6 +20,7 @@ import { useRouter } from "./screens/router.ts";
 import { Settings } from "./screens/Settings.tsx";
 import { Starting } from "./screens/Starting.tsx";
 import { TicketDetail } from "./screens/TicketDetail.tsx";
+import { TicketPass } from "./screens/TicketPass.tsx";
 
 /** The held ticket a `ticket.detail` location names, from whichever source loaded it. */
 function openedHolding(
@@ -124,6 +126,22 @@ export function App() {
     [loaded, router.location.params.ticket],
   );
 
+  const detail = useMemo(
+    () =>
+      opened === null
+        ? null
+        : opened.from === "ledger"
+          ? ledgerTicketDetail(opened.holding, assurance)
+          : ticketDetail(opened.holding, assurance),
+    [opened, assurance],
+  );
+
+  // A pass is produced on the device from the stored credential: no network (NFR-3).
+  const producePass = useCallback(
+    async (ticket: string) => produceTicketPass(ticket, (await services.credential()).signer),
+    [services],
+  );
+
   // A ticket that is no longer held, after a refresh, has no detail to show.
   useEffect(() => {
     if (screen === "ticket.detail" && loaded !== null && opened === null) {
@@ -178,14 +196,15 @@ export function App() {
             reload().catch(() => {});
           }}
         />
-      ) : screen === "ticket.detail" && opened !== null ? (
-        <TicketDetail
-          detail={
-            opened.from === "ledger"
-              ? ledgerTicketDetail(opened.holding, assurance)
-              : ticketDetail(opened.holding, assurance)
-          }
+      ) : screen === "ticket.detail" && detail !== null ? (
+        <TicketDetail detail={detail} router={router} />
+      ) : screen === "ticket.pass" && detail !== null ? (
+        <TicketPass
+          assurance={detail.assurance}
+          produce={producePass}
           router={router}
+          ticket={detail.id}
+          title={detail.title}
         />
       ) : screen === "settings.main" && account !== null ? (
         <Settings account={account} router={router} />

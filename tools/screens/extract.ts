@@ -59,6 +59,7 @@ interface Node {
 export const NOT_SCREENS = new Set([
   "Screen.tsx",
   "Disclosure.tsx",
+  "AssuranceLevel.tsx",
   "router.ts",
   "registry.ts",
   "deep-links.ts",
