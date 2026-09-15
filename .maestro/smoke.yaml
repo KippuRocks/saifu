@@ -28,6 +28,13 @@ name: Development build smoke test
 - assertVisible:
     id: "saifu-root"
 - assertVisible: "Saifu"
+# T-030-15: the screen carries its screenId, and marks itself settled.
+- assertVisible:
+    id: "holder.onboarding"
+- extendedWaitUntil:
+    visible:
+      id: "holder.onboarding.settled"
+    timeout: 30000
 # T-030-04: a first run shows the recovery disclosure before any passkey exists.
 - assertVisible:
     id: "recovery-disclosure"

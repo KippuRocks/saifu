@@ -24,7 +24,9 @@
     "vendor:libticketto": "tools/vendor-libticketto.sh",
     "vendor:check": "tools/vendor-libticketto.sh --check && tools/vendor-kippu-api.sh --check",
     "well-known": "node tools/well-known/cli.ts",
-    "vendor:kippu-api": "tools/vendor-kippu-api.sh"
+    "vendor:kippu-api": "tools/vendor-kippu-api.sh",
+    "screens:write": "node tools/screens/cli.ts write",
+    "screens:check": "node tools/screens/cli.ts check"
   },
   "dependencies": {
     "@kippu/sponsorship": "file:vendor/kippu-api/kippu-sponsorship-0.0.0.tgz",

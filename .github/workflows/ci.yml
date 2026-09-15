@@ -41,6 +41,24 @@ jobs:
             fi
             cp "$RUNNER_TEMP/App.tsx" src/App.tsx
           done
+      # T-030-15 — F-070 plan §5.4: every screen renders its screenId, every move
+      # between screens is declared, and screens.json is what the sources generate.
+      - run: pnpm screens:check
+      - name: A screen without an id, or an undeclared screen, fails the screen check
+        run: |
+          printf 'import { Text } from "react-native";\nexport const Probe = () => <Text>probe</Text>;\n' > src/screens/Probe.tsx
+          if pnpm --silent screens:check; then
+            echo "the screen check accepted a screen with no id" >&2
+            exit 1
+          fi
+          rm src/screens/Probe.tsx
+          cp screens.json "$RUNNER_TEMP/screens.json"
+          node -e 'const f="screens.json",m=JSON.parse(require("fs").readFileSync(f));m.screens.pop();require("fs").writeFileSync(f,JSON.stringify(m,null,2)+"\n")'
+          if pnpm --silent screens:check; then
+            echo "the screen check accepted an out-of-date screens.json" >&2
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/screens.json" screens.json
       # Every native dependency matches the Expo SDK in use.
       - run: pnpm deps:check
       # Metro bundles and compiles to Hermes bytecode for both platforms.
