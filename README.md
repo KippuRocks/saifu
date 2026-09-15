@@ -38,6 +38,23 @@ Development build, on a machine with Xcode or the Android SDK (JDK 17):
     pnpm ios           # build, install on a simulator, start Metro
     pnpm android       # build, install on an emulator, start Metro
 
+## Screens
+
+Every screen renders inside `<Screen id>` (`src/screens/Screen.tsx`): its
+`screenId` is the root's `testID`, and a `<screenId>.settled` element appears once
+nothing is loading or waiting on a passkey ceremony, so a test or a screenshot
+can wait for the settled screen. The ids, titles and deep-link routes are the
+router's table, `src/screens/registry.ts`; every move between screens is a
+`navigate("from", "to", params)` call naming both literally.
+
+`screens.json` is the screen manifest for kippu-e2e's navigation map (`F-070`
+§5.4), in the `kippu.screens/1` format Ibento uses. It is generated and
+committed:
+
+    pnpm screens:write   # regenerate screens.json
+    pnpm screens:check   # CI: fails on a screen without an id, undeclared or
+                         # non-literal navigation, or an out-of-date screens.json
+
 ## Device tests
 
 Flows in `.maestro/` run with [Maestro](https://maestro.mobile.dev) against an

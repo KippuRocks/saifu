@@ -1,5 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Disclosure } from "./Disclosure.tsx";
+import { Screen } from "./Screen.tsx";
 
 export interface OnboardingProps {
   readonly busy: boolean;
@@ -14,33 +15,35 @@ export interface OnboardingProps {
  */
 export function Onboarding({ busy, failed, passkeysAvailable, onSetUp }: OnboardingProps) {
   return (
-    <ScrollView contentContainerStyle={styles.page} testID="onboarding">
-      <Text style={styles.brand}>Saifu</Text>
-      <Disclosure />
-      {passkeysAvailable ? null : (
-        <Text style={styles.notice}>
-          This phone cannot create passkeys, so Saifu cannot be set up on it.
-        </Text>
-      )}
-      {failed ? (
-        <Text style={styles.notice} testID="onboarding-failed">
-          Setup did not finish. Try again.
-        </Text>
-      ) : null}
-      <View style={styles.actions}>
-        <Pressable
-          accessibilityRole="button"
-          disabled={busy || !passkeysAvailable}
-          onPress={onSetUp}
-          style={({ pressed }) => [styles.button, (busy || pressed) && styles.buttonDim]}
-          testID="onboarding-set-up"
-        >
-          <Text style={styles.buttonText}>
-            {busy ? "Setting up…" : "I understand, set up Saifu"}
+    <Screen id="holder.onboarding" busy={busy}>
+      <ScrollView contentContainerStyle={styles.page}>
+        <Text style={styles.brand}>Saifu</Text>
+        <Disclosure />
+        {passkeysAvailable ? null : (
+          <Text style={styles.notice}>
+            This phone cannot create passkeys, so Saifu cannot be set up on it.
           </Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+        )}
+        {failed ? (
+          <Text style={styles.notice} testID="onboarding-failed">
+            Setup did not finish. Try again.
+          </Text>
+        ) : null}
+        <View style={styles.actions}>
+          <Pressable
+            accessibilityRole="button"
+            disabled={busy || !passkeysAvailable}
+            onPress={onSetUp}
+            style={({ pressed }) => [styles.button, (busy || pressed) && styles.buttonDim]}
+            testID="onboarding-set-up"
+          >
+            <Text style={styles.buttonText}>
+              {busy ? "Setting up…" : "I understand, set up Saifu"}
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </Screen>
   );
 }
 

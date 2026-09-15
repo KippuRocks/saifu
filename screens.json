@@ -1,0 +1,49 @@
+{
+  "format": "kippu.screens/1",
+  "app": "saifu",
+  "platform": "native",
+  "screens": [
+    {
+      "screenId": "app.starting",
+      "route": null,
+      "title": "Starting",
+      "navigatesTo": [
+        "holder.onboarding",
+        "tickets.list"
+      ]
+    },
+    {
+      "screenId": "holder.onboarding",
+      "route": null,
+      "title": "Set up Saifu",
+      "navigatesTo": [
+        "tickets.list"
+      ]
+    },
+    {
+      "screenId": "tickets.list",
+      "route": null,
+      "title": "Your tickets",
+      "navigatesTo": [
+        "settings.main",
+        "ticket.detail"
+      ]
+    },
+    {
+      "screenId": "ticket.detail",
+      "route": null,
+      "title": "Ticket",
+      "navigatesTo": [
+        "tickets.list"
+      ]
+    },
+    {
+      "screenId": "settings.main",
+      "route": null,
+      "title": "Settings",
+      "navigatesTo": [
+        "tickets.list"
+      ]
+    }
+  ]
+}
